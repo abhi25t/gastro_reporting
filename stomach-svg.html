@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Stomach Regions</title>
+    <!-- Load Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for SVG interaction */
+        .stomach-region {
+            cursor: pointer;
+            transition: opacity 0.2s ease-in-out, stroke-width 0.2s ease-in-out;
+        }
+
+        /* Style for when a region is hovered */
+        .stomach-region:hover {
+            opacity: 0.7;
+            stroke: #000;
+            stroke-width: 2px !important; /* Force a thicker stroke on hover */
+        }
+
+        /* Style for the currently active/clicked region */
+        .stomach-region.active {
+            opacity: 1;
+            stroke: #0d6efd; /* A bright blue to show selection */
+            stroke-width: 3px !important; /* Force a thick stroke for active */
+        }
+
+        /* Ensure SVG scales nicely */
+        #stomach-svg {
+            width: 100%;
+            height: 100%;
+            max-height: 70vh; /* Prevent it from being too tall on desktops */
+            object-fit: contain;
+        }
+
+        /* Style for interactive text elements */
+        text.stomach-region tspan {
+            text-decoration: underline; /* Indicate clickability */
+            fill: #0d6efd; /* Make text blue to suggest interaction */
+            font-weight: bold;
+        }
+        text.stomach-region:hover tspan {
+            fill: #0a58ca; /* Darker blue on hover */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans h-screen flex flex-col">
+
+    <!-- Tooltip element, hidden by default --><div id="tooltip" class="hidden absolute bg-gray-800 text-white px-3 py-1.5 rounded-lg shadow-xl text-sm z-50 pointer-events-none">
+        Tooltip
+    </div>
+
+    <!-- Top Pane: SVG Container --><div id="svg-container" class="flex-grow h-3/5 bg-white shadow-lg m-4 rounded-lg overflow-hidden flex items-center justify-center p-4">
+        <svg
+            id="stomach-svg"
+            xmlns:dc="http://purl.org/dc/elements/1.1/"
+            xmlns:cc="http://creativecommons.org/ns#"
+            xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+            xmlns:svg="http://www.w3.org/2000/svg"
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+            xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+            sodipodi:version="0.32"
+            inkscape:version="0.48.0 r9654"
+            sodipodi:docname="Regions_of_stomach.svg"
+            version="1.0"
+            viewBox="197.8 358.1 105.15 80.59"
+        >
+            <defs id="defs11295" />
+            <sodipodi:namedview
+                id="base"
+                pagecolor="#ffffff"
+                bordercolor="#666666"
+                borderopacity="1.0"
+                gridtolerance="10000"
+                guidetolerance="10"
+                objecttolerance="10"
+                inkscape:pageopacity="0.0"
+                inkscape:pageshadow="2"
+                inkscape:zoom="5.656854"
+                inkscape:cx="69.884913"
+                inkscape:cy="43.620498"
+                inkscape:document-units="px"
+                inkscape:current-layer="layer1"
+                inkscape:window-width="1280"
+                inkscape:window-height="738"
+                inkscape:window-x="-8"
+                inkscape:window-y="-8"
+                showgrid="false"
+                inkscape:window-maximized="1"
+                fit-margin-top="0"
+                fit-margin-left="0"
+                fit-margin-right="0"
+                fit-margin-bottom="0"
+            />
+            <metadata id="metadata11298">
+                <rdf:RDF>
+                    <cc:Work rdf:about="">
+                        <dc:format>image/svg+xml</dc:format>
+                        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+                    </cc:Work>
+                </rdf:RDF>
+            </metadata>
+            <g inkscape:label="Layer 1" inkscape:groupmode="layer" id="layer1">
+                <!-- Main Stomach Outline --><path
+                    id="path11381"
+                    style="fill:none;stroke:#000000;stroke-width:1.35210991px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+                    d="m 262.50682,360.28954 c 1.54364,6.11035 3.19617,14.49291 5.6578,20.29165 6.00502,1.50078 3.649,-9.45015 9.99893,-8.92023 6.64944,-2.73363 13.94663,1.30011 17.78071,6.76968 3.30178,4.9764 2.04734,11.13274 2.31891,16.71531 0.0141,9.67117 -3.01536,20.61565 -12.01856,25.64859 -6.73461,4.16197 -14.52583,6.09506 -22.10343,8.07166 -5.46359,0.52021 -13.39878,-0.98635 -15.0167,-5.15591 -1.19487,-3.5938 -3.38532,-14.39793 -8.03177,-11.81878 -2.13703,-1.02543 -6.30054,9.15822 -3.38596,13.35984 m -5.77559,3.7204 c -9.41193,-8.75486 0.40206,-24.42795 6.62406,-23.11282 2.35221,-3.42093 7.03432,-2.91269 10.72282,-2.52014 3.45341,0.36752 7.17228,5.44813 7.17228,5.44813 4.66526,2.95466 15.42254,-7.0286 12.22475,-15.98848 -0.46744,-4.84501 -9.16388,-6.59761 -11.53395,-15.35021 -4.22921,-8.79956 -2.61833,-6.9958 -4.43267,-16.42407"
+                    inkscape:connector-curvature="0"
+                    sodipodi:nodetypes="ccccccccccccscccc"
+                />
+                
+                <!-- Region: Esophagus (Orange) --><path
+                    id="region-esophagus"
+                    class="stomach-region"
+                    data-name="Esophagus"
+                    style="fill:#ffa500;fill-opacity:1;stroke:#ffa500;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+                    d="m 261.93468,360.42635 c 1.37907,6.11035 2.13123,9.97898 4.33042,15.77772 l -6.42058,5.15738 c -0.68544,-1.08678 -0.70508,0.17842 -2.3421,-4.20095 -2.92138,-4.8168 -3.81342,-12.06308 -3.99159,-15.47228"
+                    inkscape:connector-curvature="0"
+                    sodipodi:nodetypes="ccccc"
+                />
+                
+                <!-- Region: Cardia (Yellow) --><path
+                    id="region-cardia-1"
+                    class="stomach-region"
+                    data-name="Cardia"
+                    style="fill:#ffff00;fill-opacity:1;stroke:#ffff00;stroke-width:1.278;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+                    d="m 144.48909,138.96326 c 0,0 0.67436,4.40188 2.87358,3.90706 0,0 1.17872,4.46987 1.30495,6.75918 0.12623,2.28931 -0.78321,0.53695 -1.64942,1.04463 -0.8662,0.50768 -3.18887,-1.09961 -3.18887,-1.09961 -1.59444,-1.53946 -5.49807,-5.77297 -5.49807,-5.77297 z"
+                    inkscape:connector-curvature="0"
+                    transform="translate(122.0409,238.2407)"
+                    sodipodi:nodetypes="cczzccc"
+                />
+                <path
+                    id="region-cardia-2"
+                    class="stomach-region"
+                    data-name="Cardia"
+                    sodipodi:type="arc"
+                    style="fill:#ffff00;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+                    sodipodi:cx="135.6922"
+                    sodipodi:cy="122.02923"
+                    sodipodi:rx="4.8382955"
+                    sodipodi:ry="1.6494188"
+                    d="m 140.5305,122.02923 c 0,0.91095 -2.16618,1.64942 -4.8383,1.64942 -2.67212,0 -4.8383,-0.73847 -4.8383,-1.64942 0,-0.91095 2.16618,-1.64942 4.8383,-1.64942 2.67212,0 4.8383,0.73847 4.8383,1.64942 z"
+                    transform="translate(122.0409,238.2407)"
+                />
+                
+                <!-- Region: Fundus (Pink) --><path
+                    id="region-fundus"
+                    class="stomach-region"
+                    data-name="Fundus"
+                    style="fill:#ff69b4;stroke:#ff69b4;stroke-width:1.30771351;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+                    d="m 269.98105,381.14092 c 4.88517,-1.60841 3.24985,-9.4204 8.31884,-9.01077 6.34442,-2.68042 16.65203,3.28727 17.47172,8.00169 z"
+                    inkscape:connector-curvature="0"
+                    sodipodi:nodetypes="cccc"
+                />
+                
+                <!-- Region: Pyloric Antrum (Light Orange/Gold) --><path
+                    id="region-pyloric-antrum"
+                    class="stomach-region"
+                    data-name="Pyloric Antrum"
+                    style="fill:#ffbc00;stroke:#ffbc00;stroke-width:0;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+                    d="m 264.93879,428.42004 c -3.40627,0.006 -12.64632,0.44793 -15.48842,-4.91296 -0.5,0.6875 7.63992,-13.72552 7.63992,-13.72552 l 1.06488,0.1005 z"
+                    inkscape:connector-curvature="0"
+                    sodipodi:nodetypes="ccccc"
+                />
+                
+                <!-- Region: Body (Light Red/Pink) --><path
+                    id="region-body"
+                    class="stomach-region"
+                    data-name="Body"
+                    style="fill:#ff5555;fill-opacity:1;stroke:#ff5555;stroke-width:0.29733524;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+                    d="m 139.46193,180.8207 -3.24719,-8.95794 1.35737,-0.16199 c 3.61558,-0.67983 8.23923,-5.14543 9.76846,-9.88997 0.73681,-2.28598 0.7699,-4.96335 0.0916,-7.40625 -0.2653,-0.95539 -0.67558,-2.00844 -0.91175,-2.3401 l -0.59433,-0.82294 0.98749,0.0657 c 0,0 1.14418,-0.28852 1.53729,-0.45269 0.68508,-0.28611 0.71475,-0.34935 0.71475,-1.52314 0,-0.67355 -0.2053,-2.1722 -0.45622,-3.33034 -0.25092,-1.15814 -0.54173,-2.33929 -0.54173,-2.33929 l 26.27626,-1.02398 c 0,0 0.27386,0.88403 0.489,1.5493 0.33292,1.02952 0.8293,2.35219 0.90561,8.43576 0.0993,7.91328 -0.62131,10.11225 -1.59763,14.05571 -1.06837,4.31533 -2.30073,7.5537 -4.62063,10.47306 -3.8842,4.88786 -10.66607,8.83974 -23.38168,12.2623 -1.39101,0.3744 -3.18887,0.69264 -3.18887,0.69264 0,0 -1.09968,-2.44301 -3.58776,-9.28587 l 0,0 z"
+                    inkscape:connector-curvature="0"
+                    transform="translate(122.0409,238.2407)"
+                    sodipodi:nodetypes="cccsccccssscccsssscccc"
+                />
+                
+                <!-- Region: Pyloric Canal (Light Brown) --><path
+                    id="region-pyloric-canal"
+                    class="stomach-region"
+                    data-name="Pyloric Canal"
+                    style="fill:#cd853f;fill-opacity:1;stroke:#cd853f;stroke-width:0.12672362;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+                    d="m 248.95646,421.73755 c -1.05158,-3.5983 -1.71504,-5.42893 -2.6009,-7.17653 -1.30495,-2.57433 -2.36944,-3.61057 -4.0254,-3.68269 l -1.62783,0.29315 c 0,0 -1.10307,-1.29061 -1.4848,-2.10681 -0.38172,-0.81621 -1.06462,-2.88637 -1.06462,-2.88637 0,0 0.57997,-0.8471 1.3122,-1.45093 0.73224,-0.60385 1.70127,-0.97246 2.3917,-1.14763 1.4432,-0.36613 3.9079,-0.40183 6.53421,-0.0946 1.61032,0.18837 2.32507,0.4881 3.90762,1.63871 0.76079,0.55311 2.70568,2.49374 3.35839,3.35099 0.3869,0.50814 0.66125,0.63154 1.01116,0.9253 0.14717,0.12356 0.45693,0.35148 0.45693,0.35148 0,0 -7.61415,13.55594 -7.65567,13.55594 -0.0298,0 -0.26064,-0.7065 -0.51299,-1.56998 z"
+                    inkscape:connector-curvature="0"
+                    sodipodi:nodetypes="cscczczscssacscc"
+                />
+                
+                <!-- Region: Duodenum (Orange/Brown) --><path
+                    style="fill:#ff6600;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+                    d="m 109.5625,190.59973 5.5625,-3.6875"
+                    id="path3851"
+                    inkscape:connector-curvature="0"
+                    transform="translate(122.0409,238.2407)"
+                />
+                <path
+                    id="region-duodenum"
+                    class="stomach-region"
+                    data-name="Duodenum"
+                    style="fill:#ff6600;fill-opacity:1;stroke:none"
+                    d="m 107.46106,186.43101 c 0,0 -0.3828,-0.74129 -0.76364,-3.04337 -0.0854,-0.516 -0.14298,-0.58707 -0.14378,-1.65728 -9.2e-4,-1.28808 0.0791,-1.71771 0.287,-2.78423 0.4702,-2.41228 1.6069,-4.8954 3.12667,-6.91639 1.1789,-1.56771 2.69392,-2.97805 4.02222,-3.55621 0.59715,-0.25992 1.6904,-0.42131 2.07061,-0.35708 0.17037,0.0288 0.0869,0.16758 0.18638,0.47975 0.17142,0.53786 0.75022,1.72196 0.92984,2.11073 0.18752,0.4059 0.46034,1.06497 0.98272,1.73726 l 0.5397,0.50492 -0.3951,0.16208 c -0.38188,0.12852 -0.63735,0.31419 -1.05928,0.75994 -1.38355,1.46162 -2.8339,4.69529 -3.18548,7.68246 -0.0878,0.74615 -0.0994,2.21185 -0.0222,2.80633 0.0973,0.74916 0.44122,1.79925 0.68655,2.39462 0.0328,0.0797 -0.20869,0.30458 -3.3486,2.17704 l -1.47887,0.88191 c -1.0625,-0.73437 -2.43472,-3.38249 -2.43472,-3.38249 z"
+                    inkscape:connector-curvature="0"
+                    transform="translate(122.0409,238.2407)"
+                    sodipodes="ccccssccsccscccsccc"
+                />
+
+                <!-- Non-interactive path/text elements remaining for visual structure --><text
+                    xml:space="preserve"
+                    style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+                    x="152.5"
+                    y="163.16223"
+                    id="text3857"
+                    sodipodi:linespacing="125%"
+                    transform="translate(122.0409,238.2407)"
+                ><tspan sodipodi:role="line" id="tspan3859" x="152.5" y="163.16223" /></text>
+                
+                <!-- Keep and make clickable: Cardial notch --><text
+                    xml:space="preserve"
+                    style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+                    x="266.11902"
+                    y="363.31113"
+                    id="region-cardial-notch"
+                    class="stomach-region"
+                    data-name="Cardial Notch"
+                    sodipodi:linespacing="125%"
+                ><tspan sodipodi:role="line" x="266.11902" y="363.31113" style="font-size:4px">Cardial</tspan><tspan
+                    sodipodi:role="line"
+                    x="266.11902"
+                    y="368.31113"
+                    style="font-size:4px"
+                >notch</tspan></text>
+
+                <!-- Keep and make clickable: Lesser Curvature --><text
+                    xml:space="preserve"
+                    style="font-size:29.23267746px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+                    id="region-lesser-curvature"
+                    class="stomach-region"
+                    data-name="Lesser Curvature"
+                    sodipodi:linespacing="125%"
+                ><textPath xlink:href="#path11381-8"><tspan style="font-size:2.19245076px">Lesser Curvature</tspan></textPath></text>
+
+                <!-- Keep and make clickable: Greater Curvature --><text
+                    xml:space="preserve"
+                    style="font-size:50.09074402px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+                    id="region-greater-curvature"
+                    class="stomach-region"
+                    data-name="Greater Curvature"
+                    sodipodi:linespacing="125%"
+                    transform="translate(67.351921,2.298097)"
+                ><textPath xlink:href="#path11381-1"><tspan style="font-size:5.00907421px">Greater Curvature</tspan></textPath></text>
+                
+                <path
+                    id="path11381-1"
+                    style="fill:none;stroke:none"
+                    d="m 231.92259,394.46618 c 0.0141,9.67118 -3.01536,20.61566 -12.01856,25.6486 -6.73461,4.16197 -14.52583,6.09505 -22.10343,8.07166"
+                    inkscape:connector-curvature="0"
+                    sodipodi:nodetypes="ccc"
+                />
+                <path
+                    id="path11381-8"
+                    style="fill:none;stroke:none"
+                    d="m 259.80396,408.23973 c 2.0578,0.12623 11.79861,-7.91249 7.89371,-17.18173"
+                    inkscape:connector-curvature="0"
+                    sodipodi:nodetypes="cc"
+                />
+                <!-- Removed path4141 --><!-- Removed path4143 --><!-- Removed path4145 --><!-- Removed path4147 --><!-- Removed path4149 --><!-- Keep and make clickable: Pylorus --><text
+                    xml:space="preserve"
+                    style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+                    x="223.44313"
+                    y="400.53345"
+                    id="region-pylorus"
+                    class="stomach-region"
+                    data-name="Pylorus"
+                    sodipodi:linespacing="125%"
+                ><tspan sodipodi:role="line" x="223.44313" y="400.53345" style="font-size:4px">Pylorus</tspan></text>
+
+                <!-- Keep and make clickable: Angular incisure --><text
+                    xml:space="preserve"
+                    style="font-size:27.48508263px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+                    x="252.79204"
+                    y="395.74854"
+                    id="region-angular-incisure"
+                    class="stomach-region"
+                    data-name="Angular Incisure"
+                    sodipodi:linespacing="125%"
+                ><tspan sodipodi:role="line" x="252.79204" y="395.74854" style="font-size:2.74850821px">Angular</tspan><tspan
+                    sodipodi:role="line"
+                    x="252.79204"
+                    y="399.18417"
+                    style="font-size:2.74850821px"
+                >incisure</tspan></text>
+                <!-- Restored path3052 for Angular Incisure --><path
+                    style="color:#000000;fill:none;stroke:#000000;stroke-width:0.40000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+                    d="m 59.220195,41.870001 0.176777,7.778175"
+                    id="path3052"
+                    inkscape:connector-curvature="0"
+                    transform="translate(197.8006,358.1157)"
+                    sodipodi:nodetypes="cc"
+                />
+            </g>
+        </svg>
+    </div>
+
+    <!-- Bottom Pane: Content Display --><div id="content-pane" class="flex-shrink-0 h-2/5 bg-white shadow-lg m-4 mt-0 rounded-lg p-6 overflow-y-auto">
+        <!-- Initial placeholder content --><div id="content-placeholder" class="h-full flex items-center justify-center">
+            <p class="text-gray-500 text-lg text-center">
+                Hover over a region to see its name.
+                <br>
+                Click on a region to learn more about it.
+            </p>
+        </div>
+        <!-- Dynamic content will be injected here --></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Data for each region
+            const regionInfo = {
+                "Esophagus": {
+                    title: "Esophagus",
+                    description: "The esophagus is a muscular tube that connects the pharynx (throat) with the stomach. It carries food and liquid from your mouth to your stomach."
+                },
+                "Cardia": {
+                    title: "Cardia",
+                    description: "The cardia is the area where the esophagus connects to the stomach. It contains the lower esophageal sphincter, a ring of muscle that prevents stomach contents from moving back into the esophagus."
+                },
+                "Fundus": {
+                    title: "Fundus",
+                    description: "The fundus is the upper, rounded part of the stomach, next to the cardia. It stores undigested food and also gases released from the chemical digestion of food."
+                },
+                "Body": {
+                    title: "Body (Corpus)",
+                    description: "The body, or corpus, is the main, central region of the stomach. This is where the majority of digestion occurs. Glands in the body secrete acid and enzymes that break down food."
+                },
+                "Pyloric Antrum": {
+                    title: "Pyloric Antrum",
+                    description: "The pyloric antrum is the lower, funnel-shaped part of the stomach, just before the pyloric canal. It holds the broken-down food before it's released into the small intestine."
+                },
+                "Pyloric Canal": {
+                    title: "Pyloric Canal",
+                    description: "The pyloric canal is a narrow passageway that connects the pyloric antrum to the duodenum (the first part of the small intestine). It is surrounded by the pyloric sphincter."
+                },
+                "Duodenum": {
+                    title: "Duodenum",
+                    description: "The duodenum is the first part of the small intestine, located between the stomach and the middle part of the small intestine (jejunum). This is where chemical digestion continues as chyme from the stomach mixes with bile and digestive enzymes."
+                },
+                "Cardial Notch": {
+                    title: "Cardial Notch (Incisura Cardiaca)",
+                    description: "The cardial notch is the acute angle formed at the superior opening of the stomach where the esophagus enters. It plays a role in the function of the lower esophageal sphincter."
+                },
+                "Lesser Curvature": {
+                    title: "Lesser Curvature",
+                    description: "The lesser curvature is the shorter, concave medial border of the stomach, extending from the cardia to the pylorus. It forms the right border of the stomach."
+                },
+                "Greater Curvature": {
+                    title: "Greater Curvature",
+                    description: "The greater curvature is the longer, convex lateral border of the stomach, extending from the fundus, around the body, to the pylorus. It forms the left border of the stomach."
+                },
+                "Pylorus": {
+                    title: "Pylorus",
+                    description: "The pylorus is the narrow opening from the stomach into the duodenum, consisting of the pyloric antrum, pyloric canal, and pyloric sphincter. It regulates the emptying of stomach contents."
+                },
+                "Angular Incisure": {
+                    title: "Angular Incisure (Angulus Gastricus)",
+                    description: "The angular incisure is a sharp indentation on the lesser curvature of the stomach, typically located about two-thirds of the way along its length. It marks the junction between the body and the pyloric part of the stomach."
+                }
+            };
+
+            const tooltip = document.getElementById('tooltip');
+            const contentPane = document.getElementById('content-pane');
+            const placeholder = document.getElementById('content-placeholder');
+            const regions = document.querySelectorAll('.stomach-region'); // Select both path and text elements now
+
+            let activeRegion = null;
+
+            regions.forEach(region => {
+                const regionName = region.getAttribute('data-name');
+
+                // --- Tooltip Hover Events ---
+                region.addEventListener('mouseover', (e) => {
+                    tooltip.innerHTML = regionName;
+                    tooltip.classList.remove('hidden');
+                });
+
+                region.addEventListener('mouseout', () => {
+                    tooltip.classList.add('hidden');
+                });
+
+                region.addEventListener('mousemove', (e) => {
+                    // Position the tooltip slightly offset from the cursor
+                    tooltip.style.left = `${e.pageX + 15}px`;
+                    tooltip.style.top = `${e.pageY + 10}px`;
+                });
+
+                // --- Click Event to Update Content Pane ---
+                region.addEventListener('click', () => {
+                    const data = regionInfo[regionName];
+                    if (!data) return;
+
+                    // Remove active class from previously clicked region
+                    if (activeRegion) {
+                        // For paths, remove the class directly
+                        if (activeRegion.tagName.toLowerCase() === 'path') {
+                           document.querySelectorAll(`.stomach-region[data-name="${activeRegion.getAttribute('data-name')}"]`).forEach(el => {
+                               el.classList.remove('active');
+                           });
+                        } else { // For text elements
+                            activeRegion.classList.remove('active');
+                        }
+                    }
+                    
+                    // Add active class to the current region
+                    // For paths, apply to all associated paths (e.g., Cardia has 2 paths)
+                    if (region.tagName.toLowerCase() === 'path') {
+                        document.querySelectorAll(`.stomach-region[data-name="${regionName}"]`).forEach(el => {
+                            el.classList.add('active');
+                        });
+                    } else { // For text elements
+                        region.classList.add('active');
+                    }
+                    
+                    activeRegion = region; 
+
+                    // Hide placeholder
+                    if (placeholder) {
+                        placeholder.style.display = 'none';
+                    }
+
+                    // Update content pane
+                    contentPane.innerHTML = `
+                        <h2 class="text-3xl font-bold text-blue-800 mb-3">${data.title}</h2>
+                        <p class="text-gray-700 text-base leading-relaxed">${data.description}</p>
+                    `;
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
+
+
+

@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Endoscopy Report Prototype</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom scrollbar for diagnosis palettes */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9; /* cool-gray-100 */
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #94a3b8; /* cool-gray-400 */
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #64748b; /* cool-gray-500 */
+        }
+
+        /* Style for the report pane scrollbar */
+        #report-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        #report-content::-webkit-scrollbar-track {
+            background: #f8fafc; /* gray-50 */
+        }
+        #report-content::-webkit-scrollbar-thumb {
+            background: #cbd5e1; /* gray-300 */
+            border-radius: 4px;
+        }
+        #report-content::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; /* gray-400 */
+        }
+        
+        /* Custom border for the last child in details pane */
+        .detail-feature-section:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans text-gray-900">
+
+    <!-- Main Container -->
+    <div class="container mx-auto p-4 max-w-full">
+        
+        <!-- Header -->
+        <header class="mb-4">
+            <h1 class="text-4xl font-bold text-center text-blue-800">Endoscopy Report</h1>
+        </header>
+
+        <!-- Main Content: 2-column layout -->
+        <div class="flex flex-col lg:flex-row gap-4">
+
+            <!-- Left Pane: Diagnosis & Details (70%) -->
+            <div class="lg:w-[70%] space-y-4">
+                
+                <!-- Section 1: Diagnosis -->
+                <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-200">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4 pb-2 border-b">Diagnosis</h2>
+                    
+                    <!-- 2-Row Grid: Locations & Sub-Locations -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        
+                        <!-- ROW 1: Main Locations (NOW WITH SCROLLING PALETTES) -->
+                        <section id="esophagus" class="space-y-3 h-[800px] flex flex-col">
+                            <h3 class="text-xl font-semibold text-blue-700 flex-shrink-0">Esophagus</h3>
+                            <!-- This inner div will scroll -->
+                            <div class="flex-grow overflow-y-auto pr-2 custom-scrollbar grid grid-cols-1 gap-2">
+                                <!-- Buttons are now sorted alphabetically -->
+                                <button class="diagnosis-btn" data-location="Esophagus">BLEEDING OF UNKNOWN ORIGIN</button>
+                                <button class="diagnosis-btn" data-location="Esophagus">CAUSTIC INJURY</button>
+                                <button class="diagnosis-btn" data-location="Esophagus">COELIAC DISEASE</button>
+                                <button class="diagnosis-btn" data-location="Esophagus">CROHNS DISEASE</button>
+                                <button class="diagnosis-btn" data-location="Esophagus">DIVERTICULUM</button>
+                                <button class="diagnosis-btn" data-location="Esophagus">EROSIONS</button>
+                                <button class="diagnosis-btn" data-location="Esophagus">ESOPHAGEAL CANDIDIASIS</button>
+                                <button class="diagnosis-btn" data-location="Esophagus">ESOPHAGEAL INLET PATCH</button>
+                                <button class="diagnosis-btn" data-location="Esophagus">ESOPHAGITIS</button>
+                                <button class="diagnosis-btn" data-location="Esophagus">EXTRINSIC COMPRESSION</button>
+                                <button class="diagnosis-btn" data-location="Esophagus">FISTULA</button>
+                                <button class="diagnosis-btn" data-location="Esophagus">LESION</button>
+                                <button class="diagnosis-btn" data-location="Esophagus">NODULARITY</button>
+                                <button class="diagnosis-btn" data-location="Esophagus">POLYPOSIS</button>
+                                <button class="diagnosis-btn" data-location="Esophagus">POSTOPERATIVE APPEARANCE</button>
+                                <button class="diagnosis-btn" data-location="Esophagus">STRICTURE</button>
+                                <button class="diagnosis-btn" data-location="Esophagus">SUPERFICIAL NEOPLASM</button>
+                                <button class="diagnosis-btn" data-location="Esophagus">Suspected Barrett's Esophagus</button>
+                                <button class="diagnosis-btn" data-location="Esophagus">SUSPECTED ESOPHAGEAL MOTILITY DISORDER</button>
+                                <button class="diagnosis-btn" data-location="Esophagus">Tumor</button>
+                                <button class="diagnosis-btn" data-location="Esophagus">ulcer</button>
+                                <button class="diagnosis-btn" data-location="Esophagus">VARICES</button>
+                            </div>
+                        </section>
+
+                        <section id="ge-junction" class="space-y-3 h-[800px] flex flex-col">
+                            <h3 class="text-xl font-semibold text-blue-700 flex-shrink-0">GE Junction</h3>
+                            <div class="flex-grow overflow-y-auto pr-2 custom-scrollbar grid grid-cols-1 gap-2">
+                                <button class="diagnosis-btn" data-location="GE Junction">CAUSTIC INJURY</button>
+                                <button class="diagnosis-btn" data-location="GE Junction">ulcer</button>
+                            </div>
+                        </section>
+
+                        <section id="gastric" class="space-y-3 h-[800px] flex flex-col">
+                            <h3 class="text-xl font-semibold text-blue-700 flex-shrink-0">Gastric</h3>
+                            <div class="flex-grow overflow-y-auto pr-2 custom-scrollbar grid grid-cols-1 gap-2">
+                                <button class="diagnosis-btn" data-location="Gastric">GASTROPATHY</button>
+                                <button class="diagnosis-btn" data-location="Gastric">ulcer</button>
+                            </div>
+                        </section>
+
+                        <section id="duodenum" class="space-y-3 h-[800px] flex flex-col">
+                            <h3 class="text-xl font-semibold text-blue-700 flex-shrink-0">Duodenum</h3>
+                            <div class="flex-grow overflow-y-auto pr-2 custom-scrollbar grid grid-cols-1 gap-2">
+                                <button class="diagnosis-btn" data-location="Duodenum">DUODENOPATHY</button>
+                                <button class="diagnosis-btn" data-location="Duodenum">ulcer</button>
+                                <button class="diagnosis-btn" data-location="Duodenum">DUODENAL BULB DEFORMITY</button>
+                            </div>
+                        </section>
+
+                        <!-- ROW 2: Sub-Location Pane -->
+                        <div id="sub-location-pane" class="md:col-span-4 bg-blue-50 p-2 rounded-lg border border-blue-200 hidden">
+                            <h3 id="sub-location-title" class="text-xl font-semibold text-blue-700 mb-2">Sub-Location</h3>
+                            <div id="sub-location-options" class="flex flex-wrap gap-2">
+                                <!-- Sub-location buttons populated by JS -->
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Section 2: Disease Details (hidden by default) -->
+                <div id="disease-details-pane" class="bg-white p-4 rounded-xl shadow-lg border border-gray-200 hidden">
+                    <h2 id="details-title" class="text-2xl font-semibold text-gray-800 mb-4 pb-2 border-b">Disease Details</h2>
+                    <div id="details-content" class="space-y-4">
+                        <!-- Content populated by JS -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Pane: Report (30%) -->
+            <div class="lg:w-[30%] bg-white p-4 rounded-xl shadow-lg border border-gray-200 sticky top-4" style="align-self: flex-start;">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4 pb-2 border-b">Report</h2>
+                
+                <!-- Report Content -->
+                <div id="report-content" class="h-[800px] overflow-y-auto space-y-4 pr-2">
+                    <!-- Report items populated by JS -->
+                    <p id="report-placeholder" class="text-gray-500 italic">Select a diagnosis to begin the report.</p>
+                </div>
+
+                <!-- Clear Report Button -->
+                <button id="clear-report-btn" class="w-full mt-4 bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition duration-200">
+                    Clear Report
+                </button>
+
+                <!-- NEW: Overall Remarks -->
+                <div class="mt-6">
+                    <label for="overall-remarks" class="block text-xl font-semibold text-gray-800 mb-2">Overall Remarks</label>
+                    <textarea id="overall-remarks" rows="4" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Apply base styles to all diagnosis buttons
+        tailwind.config = {
+            theme: {
+                extend: {
+                    // You can add custom theme settings here if needed
+                }
+            },
+            plugins: [
+                function ({ addBase, theme }) {
+                    addBase({
+                        '.diagnosis-btn': {
+                            '@apply w-full text-left p-3 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-blue-50 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out text-gray-700 font-medium': {},
+                            '@apply disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:border-gray-300 disabled:hover:bg-gray-100': {},
+                        },
+                        '.diagnosis-btn.active': {
+                             '@apply bg-blue-100 border-blue-500 ring-2 ring-blue-500 ring-opacity-50 text-blue-800': {},
+                        },
+                        '.detail-option-btn': {
+                            '@apply p-2 px-3 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150': {},
+                            '@apply disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed': {},
+                        },
+                        '.detail-option-btn.active': {
+                            '@apply bg-blue-600 text-white border-blue-600 hover:bg-blue-700': {},
+                        },
+                        '.detail-feature-section': {
+                            '@apply border-b border-gray-200 pb-4': {},
+                        },
+                        '.detail-feature-title': {
+                            '@apply text-lg font-semibold text-gray-700 mb-2': {},
+                        }
+                    });
+                }
+            ]
+        }
+
+        // --- State Variables ---
+        let reportData = {}; // Main data object
+        let currentSelection = null; // Tracks { location, disease }
+        
+        // --- DOM Elements ---
+        const diagnosisPanels = document.getElementById('diagnosis-panels');
+        const subLocationPane = document.getElementById('sub-location-pane');
+        const subLocationOptions = document.getElementById('sub-location-options');
+        const subLocationTitle = document.getElementById('sub-location-title');
+        const detailsPane = document.getElementById('disease-details-pane');
+        const detailsTitle = document.getElementById('details-title');
+        const detailsContent = document.getElementById('details-content');
+        const reportContent = document.getElementById('report-content');
+        const reportPlaceholder = document.getElementById('report-placeholder');
+        const clearReportBtn = document.getElementById('clear-report-btn');
+
+        // ================================================================
+        // === JSON DATA FOR DYNAMIC UI ===
+        // ================================================================
+
+        /**
+         * Defines the sub-locations for each main location.
+         * Used to populate the second row (sub-location pane).
+         */
+        const subLocationData = {
+            "Esophagus": ["Upper", "Mid", "Lower"],
+            "GE Junction": [], // Empty array means the pane stays hidden
+            "Gastric": ["Antrum", "Fundus", "Greater Curve", "Lesser Curve", "Pylorus", "Body"],
+            "Duodenum": ["D1", "D2"]
+        };
+
+        /**
+         * Defines the specific features for each disease.
+         * Used to dynamically build the "Disease Details" pane.
+         */
+        const diseaseDetailsData = {
+            // --- Esophagus Diseases ---
+            "Suspected Barrett's Esophagus": {
+                subLocationLogic: { default: 'Lower', disable: ['Upper', 'Mid'] },
+                features: [
+                    { name: "Biopsy taken", type: "options", options: ["Yes", "No"] },
+                    { name: "Texture", type: "options", options: ["Velvety", "Granular", "Irregular surface pattern"] },
+                    { name: "Salmon Color Mucosa", type: "options", options: ["Yes", "No"] },
+                    { name: "Shape", type: "options", options: ["Tongue like projection", "None"] },
+                    { name: "Surface Architecture", type: "options", options: ["Disrupted glandular pattern", "Elevated Lesion", "Depressed Lesions"] },
+                    { name: "Inflammation signs", type: "options", options: ["Erythema", "Edema", "Erosions"] },
+                    { 
+                        name: "Prague Classification", 
+                        type: "prague", 
+                        c_options: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+                        m_options: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", ">10"]
+                    },
+                    { name: "Mucosal patterns (WL)", type: "options", options: ["Pit pattern irregularity", "Nodularity", "Ridging"] },
+                    { name: "Vascular patterns (WL)", type: "options", options: ["Irregular", "Abnormal Blood vessel distribution", "Increased vascularity"] },
+                    { name: "Mucosal/Vascular patterns (NBI)", type: "options", options: ["Dysplastic", "Non-dysplastic"] }
+                ]
+            },
+            "CROHNS DISEASE": {
+                features: [
+                    { name: "ulcer present", type: "options", options: ["Yes", "No"] },
+                    { 
+                        name: "Stricture Present", 
+                        type: "options", 
+                        options: ["Yes", "No"],
+                        conditional: {
+                            "Yes": [
+                                { name: "Appearance", type: "options", options: ["Fibrotic", "Inflammatory"], indented: true },
+                                { name: "Passable", type: "options", options: ["Yes", "No"], indented: true }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "STRICTURE": {
+                features: [
+                    { name: "Etiology", type: "options", options: ["Peptic", "Malignant", "Eosinophilic", "Radiation-induced", "Caustic", "Other"] },
+                    { name: "Appearance", type: "options", options: ["Smooth", "Irregular", "Web-like"] },
+                    { name: "Passable", type: "options", options: ["Yes, with scope", "Yes, with guidewire", "No"] }
+                ]
+            },
+            "ESOPHAGEAL CANDIDIASIS": {
+                features: [
+                    { name: "Kodsi Classification", type: "options", options: ["Grade I (Few plaques)", "Grade II (Multiple plaques)", "Grade III (Confluent/linear)", "Grade IV (Friable mucosa)"] },
+                    { name: "Biopsy taken", type: "options", options: ["Yes", "No"] }
+                ]
+            },
+            "LESION": {
+                features: [
+                    { name: "Paris Classification (Type)", type: "options", options: ["0-Ip (Polypoid, pedunculated)", "0-Is (Polypoid, sessile)", "0-IIa (Superficial, elevated)", "0-IIb (Superficial, flat)", "0-IIc (Superficial, depressed)", "0-III (Excavated)"] },
+                    { name: "Size (mm)", type: "text", placeholder: "Enter size in mm" },
+                    { name: "Location (cm from incisors)", type: "text", placeholder: "Enter cm" },
+                    { name: "Biopsy taken", type: "options", options: ["Yes", "No"] }
+                ]
+            },
+            "SUPERFICIAL NEOPLASM": {
+                features: [
+                    { name: "Paris Classification (Type)", type: "options", options: ["0-Ip (Polypoid, pedunculated)", "0-Is (Polypoid, sessile)", "0-IIa (Superficial, elevated)", "0-IIb (Superficial, flat)", "0-IIc (Superficial, depressed)", "0-III (Excavated)"] },
+                    { name: "Size (mm)", type: "text", placeholder: "Enter size in mm" },
+                    { name: "Location (cm from incisors)", type: "text", placeholder: "Enter cm" },
+                    { name: "NBI Appearance", type: "options", options: ["Regular", "Irregular", "Absent"] },
+                    { name: "Biopsy taken", type: "options", options: ["Yes", "No"] }
+                ]
+            },
+            "Tumor": {
+                features: [
+                    { name: "Appearance", type: "options", options: ["Polypoidal", "Ulcerated", "Infiltrative", "Fungating"] },
+                    { name: "Location (cm from incisors)", type: "text", placeholder: "Enter start cm" },
+                    { name: "Length (cm)", type: "text", placeholder: "Enter length in cm" },
+                    { name: "Biopsy taken", type: "options", options: ["Yes", "No"] }
+                ]
+            },
+            "VARICES": {
+                features: [
+                    { name: "Grade", type: "options", options: ["Grade I (Small, straight)", "Grade II (Enlarged, tortuous)", "Grade III (Large, coil-shaped)"] },
+                    { name: "Red Wale Signs", type: "options", options: ["Yes", "No"] },
+                    { name: "Active Bleeding", type: "options", options: ["Yes", "No"] }
+                ]
+            },
+            "ESOPHAGITIS": {
+                features: [
+                    { name: "Grading (Los Angeles)", type: "options", options: ["Grade A", "Grade B", "Grade C", "Grade D", "Not Applicable"] },
+                    { name: "Appearance", type: "options", options: ["Erythema", "Erosions", "Ulcers", "Friability"] }
+                ]
+            },
+            "DIVERTICULUM": {
+                features: [
+                    { name: "Type", type: "options", options: ["Zenker's", "Traction", "Epiphrenic", "Other"] },
+                    { name: "Food Debris Present", type: "options", options: ["Yes", "No"] }
+                ]
+            },
+            // Simple Yes/No for others as a default
+            "BLEEDING OF UNKNOWN ORIGIN": { features: [{ name: "Active Bleeding Seen", type: "options", options: ["Yes", "No"] }] },
+            "CAUSTIC INJURY": { features: [{ name: "Severity (Zargar)", type: "options", options: ["0", "1", "2a", "2b", "3a", "3b"] }] },
+            "COELIAC DISEASE": { features: [{ name: "Scalloping of Folds", type: "options", options: ["Yes", "No"] }] },
+            "EROSIONS": { features: [{ name: "Appearance", type: "options", options: ["Linear", "Punctate", "Superficial"] }] },
+            "ESOPHAGEAL INLET PATCH": { features: [{ name: "Biopsy taken", type: "options", options: ["Yes", "No"] }] },
+            "EXTRINSIC COMPRESSION": { features: [{ name: "Appearance", type: "options", options: ["Smooth", "Pulsatile", "Fixed"] }] },
+            "FISTULA": { features: [{ name: "Location", type: "text", placeholder: "Describe location" }] },
+            "NODULARITY": { features: [{ name: "Appearance", type: "options", options: ["Fine", "Coarse", "Warty"] }] },
+            "POLYPOSIS": { features: [{ name: "Appearance", type: "options", options: ["Sessile", "Pedunculated", "Multiple"] }] },
+            "POSTOPERATIVE APPEARANCE": { features: [{ name: "Anastomosis", type: "options", options: ["Intact", "Strictured", "Leaking"] }] },
+            "SUSPECTED ESOPHAGEAL MOTILITY DISORDER": { features: [{ name: "Findings", type: "options", options: ["Corkscrew esophagus", "Achalasia-like", "Spasms"] }] },
+            "ulcer": { features: [{ name: "Appearance", type: "options", options: ["Clean base", "Active bleeding", "Visible vessel"] }] },
+            
+            // --- GE Junction Diseases ---
+            // (Uses 'CAUSTIC INJURY' and 'ulcer' from above)
+
+            // --- Gastric Diseases ---
+            "GASTROPATHY": { features: [{ name: "Appearance", type: "options", options: ["Erythematous", "Erosive", "Hemorrhagic", "Portal Hypertensive"] }] },
+            
+            // --- Duodenum Diseases ---
+            "DUODENOPATHY": { features: [{ name: "Appearance", type: "options", options: ["Erythema", "Erosions", "Scalloping", "Nodularity"] }] },
+            "DUODENAL BULB DEFORMITY": {
+                subLocationLogic: { default: 'D1', disable: ['D2'] },
+                features: [
+                    { name: "Scarring", type: "options", options: ["Yes", "No"] },
+                    { name: "pseudodiverticulum", type: "options", options: ["Yes", "No"] },
+                    { name: "Shelf-Like deformity", type: "options", options: ["Yes", "No"] },
+                    { name: "Luminal Narrowing", type: "options", options: ["Yes", "No"] },
+                    { name: "Scope passing into D2", type: "options", options: ["Yes", "No"] },
+                    { name: "Mucosal Bridge", type: "options", options: ["Yes", "No"] }
+                ]
+            }
+        };
+        // ================================================================
+        // === END OF JSON DATA ===
+        // ================================================================
+
+
+        // --- Functions ---
+
+        /**
+         * NEW: Hides the sub-location pane.
+         */
+        function hideSubLocationPane() {
+            subLocationPane.classList.add('hidden');
+            subLocationOptions.innerHTML = '';
+        }
+
+        /**
+         * NEW: Populates and shows the sub-location pane based on the location.
+         */
+        function populateSubLocations(location, diseaseName) {
+            const options = subLocationData[location];
+            
+            if (!options || options.length === 0) {
+                hideSubLocationPane();
+                return; // No sub-locations for this area (e.g., GE Junction)
+            }
+
+            subLocationOptions.innerHTML = ''; // Clear old options
+            
+            // Check for special logic (e.g., Barrett's)
+            const diseaseLogic = diseaseDetailsData[diseaseName]?.subLocationLogic;
+            let defaultSelection = diseaseLogic?.default;
+            let disabledOptions = diseaseLogic?.disable || [];
+
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.className = 'detail-option-btn';
+                button.dataset.option = option;
+                
+                if (disabledOptions.includes(option)) {
+                    button.disabled = true;
+                }
+
+                if (option === defaultSelection) {
+                    // Automatically select the default
+                    button.classList.add('active');
+                    // Save this default selection
+                    if (reportData[location] && reportData[location][diseaseName]) {
+                        reportData[location][diseaseName].subLocation = option;
+                    }
+                }
+                subLocationOptions.appendChild(button);
+            });
+
+            subLocationPane.classList.remove('hidden'); // Show the pane
+        }
+
+        /**
+         * NEW: Dynamically builds the "Disease Details" pane from JSON.
+         */
+        function populateDetails(location, diseaseName) {
+            const diseaseDetails = diseaseDetailsData[diseaseName];
+            detailsTitle.textContent = `Details for: ${diseaseName}`;
+            detailsContent.innerHTML = ''; // Clear previous content
+
+            if (diseaseDetails && diseaseDetails.features) {
+                diseaseDetails.features.forEach(feature => {
+                    if (feature.type === 'prague') {
+                        buildPragueSection(detailsContent, feature);
+                    } else if (feature.type === 'options') {
+                        buildOptionSection(detailsContent, feature);
+                        
+                        // NEW: Check for and build conditional children
+                        if (feature.conditional) {
+                            Object.values(feature.conditional).flat().forEach(condFeature => {
+                                // Mark the feature with its parent so buildOptionSection knows to hide it
+                                const featureToBuild = {
+                                    ...condFeature,
+                                    conditionalParent: feature.name 
+                                };
+                                
+                                // Build based on type
+                                if (featureToBuild.type === 'options') {
+                                    buildOptionSection(detailsContent, featureToBuild);
+                                } else if (featureToBuild.type === 'text') {
+                                    buildTextSection(detailsContent, featureToBuild);
+                                }
+                                // Add other types here if they exist in the future
+                            });
+                        }
+                    } else if (feature.type === 'text') {
+                        buildTextSection(detailsContent, feature);
+                    }
+                });
+
+                // Handle initial state of conditional fields
+                updateConditionalVisibility(detailsContent, diseaseDetails);
+
+            } else {
+                // No details defined in the JSON for this disease
+                detailsContent.innerHTML = '<p class="text-gray-500 italic">No specific details available for this diagnosis.</p>';
+            }
+
+            // NEW: Always add the comments section at the end
+            buildCommentsSection(detailsContent);
+
+            detailsPane.classList.remove('hidden'); // Show the pane
+            loadSelections(location, diseaseName); // Load existing data
+        }
+
+        /**
+         * NEW: Helper function to build a text input section.
+         */
+        function buildTextSection(container, feature) {
+            const section = document.createElement('section');
+            section.className = 'detail-feature-section';
+            
+            const titleEl = document.createElement('h4');
+            titleEl.className = 'detail-feature-title';
+            titleEl.textContent = feature.name;
+            section.appendChild(titleEl);
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = feature.placeholder || 'Enter value...';
+            input.dataset.feature = feature.name;
+            input.className = 'w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500';
+            section.appendChild(input);
+
+            container.appendChild(section);
+        }
+        
+        /**
+         * NEW: Helper function to build an option button section.
+         */
+        function buildOptionSection(container, feature) {
+            const section = document.createElement('section');
+            section.className = 'detail-feature-section';
+            if (feature.indented) {
+                section.classList.add('ml-6', 'pl-4', 'border-l-2', 'border-blue-200');
+            }
+            // Add a data attribute to mark this section as conditional if needed
+            if (feature.conditionalParent) {
+                section.classList.add('hidden'); // Hide by default
+            }
+            
+            const titleEl = document.createElement('h4');
+            titleEl.className = 'detail-feature-title';
+            titleEl.textContent = feature.name;
+            section.appendChild(titleEl);
+
+            const optionsContainer = document.createElement('div');
+            optionsContainer.className = 'flex flex-wrap gap-2';
+            optionsContainer.dataset.feature = feature.name; // Group for event delegation
+            
+            feature.options.forEach(opt => {
+                const button = document.createElement('button');
+                button.textContent = opt;
+                button.className = 'detail-option-btn';
+                button.dataset.option = opt;
+                optionsContainer.appendChild(button);
+            });
+            
+            section.appendChild(optionsContainer);
+            container.appendChild(section);
+        }
+
+        /**
+         * NEW: Helper function to build the "Additional Comments" text area.
+         */
+        function buildCommentsSection(container) {
+            const section = document.createElement('section');
+            section.className = 'detail-feature-section'; // Uses :last-child CSS to remove border
+
+            const titleEl = document.createElement('h4');
+            titleEl.className = 'detail-feature-title';
+            titleEl.textContent = 'Additional Comments';
+            section.appendChild(titleEl);
+
+            const textarea = document.createElement('textarea');
+            textarea.id = 'additional-comments-textarea'; // ID for event handling
+            textarea.rows = '3';
+            textarea.className = 'w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500';
+            textarea.placeholder = 'Type any additional findings here...';
+            section.appendChild(textarea);
+
+            container.appendChild(section);
+        }
+
+        /**
+         * Helper function to build the special Prague Classification section.
+         */
+        function buildPragueSection(container, feature) {
+            const section = document.createElement('section');
+            section.className = 'detail-feature-section';
+            
+            const titleEl = document.createElement('h4');
+            titleEl.className = 'detail-feature-title';
+            titleEl.textContent = feature.name;
+            section.appendChild(titleEl);
+
+            // C (Circumferential Extent)
+            const cContainer = document.createElement('div');
+            cContainer.className = 'mb-3';
+            cContainer.innerHTML = '<h5 class="font-medium text-gray-600 mb-1">Circumferential Extent (C)</h5>';
+            const cOptions = document.createElement('div');
+            cOptions.className = 'flex flex-wrap gap-2';
+            cOptions.dataset.feature = "Prague C";
+            feature.c_options.forEach(opt => {
+                cOptions.innerHTML += `<button class="detail-option-btn" data-option="${opt}">${opt}</button>`;
+            });
+            cContainer.appendChild(cOptions);
+            section.appendChild(cContainer);
+
+            // M (Maximum Extent)
+            const mContainer = document.createElement('div');
+            mContainer.innerHTML = '<h5 class="font-medium text-gray-600 mb-1">Maximum Extent (M)</h5>';
+            const mOptions = document.createElement('div');
+            mOptions.className = 'flex flex-wrap gap-2';
+            mOptions.dataset.feature = "Prague M";
+            feature.m_options.forEach(opt => {
+                mOptions.innerHTML += `<button class="detail-option-btn" data-option="${opt}">${opt}</button>`;
+            });
+            mContainer.appendChild(mOptions);
+            section.appendChild(mContainer);
+            
+            container.appendChild(section);
+        }
+
+        /**
+         * NEW: Loads existing selections from reportData into the details pane.
+         */
+        function loadSelections(location, diseaseName) {
+            const diseaseData = reportData[location]?.[diseaseName];
+            if (!diseaseData) return;
+
+            // Load sub-location selection
+            const subLocation = diseaseData.subLocation;
+            if (subLocation) {
+                subLocationOptions.querySelectorAll('.detail-option-btn').forEach(btn => {
+                    if (btn.dataset.option === subLocation) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+
+            // Load details selections
+            const details = diseaseData.details;
+            if (!details) return;
+
+            Object.keys(details).forEach(featureName => {
+                const value = details[featureName];
+                
+                // Find the option button container
+                const optionContainer = detailsContent.querySelector(`[data-feature="${featureName}"]`);
+                if (optionContainer) {
+                    // This is an 'options' type feature
+                    optionContainer.querySelectorAll('.detail-option-btn').forEach(btn => {
+                        if (btn.dataset.option === value) {
+                            btn.classList.add('active');
+                        } else {
+                            btn.classList.remove('active');
+                        }
+                    });
+                } else {
+                    // This is a 'text' type feature
+                    const input = detailsContent.querySelector(`input[data-feature="${featureName}"]`);
+                    if (input) {
+                        input.value = value;
+                    }
+                }
+            });
+
+            // NEW: Load comments
+            const comments = reportData[location]?.[diseaseName]?.comments;
+            const commentsTextarea = detailsContent.querySelector('#additional-comments-textarea');
+            if (commentsTextarea) {
+                commentsTextarea.value = comments || '';
+            }
+        }
+
+        /**
+         * Handles the complex logic for Prague Classification (M >= C).
+         */
+        function handlePragueLogic(cValueStr) {
+            const cValue = parseInt(cValueStr, 10);
+            const mOptions = detailsContent.querySelectorAll('[data-feature="Prague M"] .detail-option-btn');
+            
+            let currentMValue = reportData[currentSelection.location]?.[currentSelection.disease]?.details?.["Prague M"];
+            let mValueNum = parseInt(currentMValue, 10);
+
+            mOptions.forEach(btn => {
+                const btnValue = parseInt(btn.dataset.option, 10);
+                // Handle ">10" case
+                if (btn.dataset.option === ">10") {
+                    if (cValue === 10) {
+                        btn.disabled = false;
+                    } else if (cValue > 10) { 
+                        // Should not happen, but for safety
+                         btn.disabled = false;
+                    } else {
+                         btn.disabled = cValue > 10;
+                    }
+                    if (cValue > 10) btn.disabled = false;
+                }
+                // Handle numeric cases
+                else if (btnValue < cValue) {
+                    btn.disabled = true;
+                    btn.classList.remove('active');
+                    // If the currently selected M value is now invalid, deselect it
+                    if (currentMValue === btn.dataset.option) {
+                        delete reportData[currentSelection.location][currentSelection.disease].details["Prague M"];
+                    }
+                } else {
+                    btn.disabled = false;
+                }
+            });
+        }
+
+        /**
+         * NEW: Shows/hides conditional fields based on selections.
+         */
+        function updateConditionalVisibility(container, diseaseDetails) {
+            const data = reportData[currentSelection.location]?.[currentSelection.disease]?.details;
+            if (!data) return;
+
+            diseaseDetails.features.forEach(feature => {
+                if (feature.conditional) {
+                    const selectedOption = data[feature.name];
+                    Object.keys(feature.conditional).forEach(key => {
+                        const subFeatures = feature.conditional[key];
+                        subFeatures.forEach(subFeature => {
+                            const subFeatureEl = container.querySelector(`[data-feature="${subFeature.name}"]`)?.closest('.detail-feature-section');
+                            if (subFeatureEl) {
+                                if (selectedOption === key) {
+                                    subFeatureEl.classList.remove('hidden');
+                                } else {
+                                    subFeatureEl.classList.add('hidden');
+                                    // Also clear the data for this hidden field
+                                    if (reportData[currentSelection.location]?.[currentSelection.disease]?.details[subFeature.name]) {
+                                        delete reportData[currentSelection.location][currentSelection.disease].details[subFeature.name];
+                                        // We might need to re-render the report here if we want instant removal
+                                    }
+                                }
+                            }
+                        });
+                    });
+                }
+            });
+        }
+
+        /**
+         * NEW: Saves a selection from the details pane to the main data object.
+         */
+        function saveDetailSelection(featureName, value) {
+            if (!currentSelection) return;
+            const { location, disease } = currentSelection;
+
+            if (reportData[location] && reportData[location][disease]) {
+                if (value === null) {
+                    // Deselecting
+                    delete reportData[location][disease].details[featureName];
+                } else {
+                    reportData[location][disease].details[featureName] = value;
+                }
+            }
+
+            // --- Handle Special Logic ---
+            // 1. Prague Classification
+            if (featureName === "Prague C") {
+                handlePragueLogic(value);
+            }
+            // 2. Conditional Fields (e.g., Crohn's Stricture)
+            const diseaseDetails = diseaseDetailsData[disease];
+            if (diseaseDetails) {
+                updateConditionalVisibility(detailsContent, diseaseDetails);
+            }
+            renderReport(); // Update the report pane on every selection change
+        }
+
+        /**
+         * NEW: Handles real-time input into the "Additional Comments" text area.
+         */
+        function handleCommentInput(event) {
+            if (!currentSelection) return;
+
+            const { location, disease } = currentSelection;
+            const textarea = event.target;
+            
+            if (reportData[location] && reportData[location][disease]) {
+                reportData[location][disease].comments = textarea.value;
+                renderReport(); // Update the report in real-time
+            }
+        }
+
+        /**
+         * Hides the disease details pane.
+         */
+        function hideDetailsPane() {
+            detailsPane.classList.add('hidden');
+            detailsContent.innerHTML = '';
+            currentSelection = null;
+        }
+
+        /**
+         * Re-draws the entire report pane based on the reportData object.
+         */
+        function renderReport() {
+            reportContent.innerHTML = ''; // Clear the report
+            
+            const locations = Object.keys(reportData);
+
+            if (locations.length === 0) {
+                reportContent.appendChild(reportPlaceholder);
+                return;
+            }
+
+            locations.forEach(location => {
+                const diseases = reportData[location];
+                if (Object.keys(diseases).length === 0) return;
+
+                const locationHeader = document.createElement('h3');
+                locationHeader.className = 'text-xl font-semibold text-blue-700 border-b border-blue-200 pb-1';
+                locationHeader.textContent = location;
+                reportContent.appendChild(locationHeader);
+
+                const diseasesContainer = document.createElement('div');
+                diseasesContainer.className = 'space-y-3 pl-2';
+
+                Object.keys(diseases).forEach(diseaseName => {
+                    const diseaseData = diseases[diseaseName];
+                    const diseaseBlock = document.createElement('div');
+                    diseaseBlock.className = 'report-item bg-gray-50 p-3 rounded-lg border border-gray-200';
+                    diseaseBlock.dataset.location = location;
+                    diseaseBlock.dataset.disease = diseaseName;
+
+                    // --- Header with Title and Remove Button ---
+                    const header = document.createElement('div');
+                    header.className = 'flex justify-between items-center';
+                    
+                    const title = document.createElement('h4');
+                    title.className = 'text-lg font-semibold text-gray-800 cursor-pointer hover:underline';
+                    title.textContent = diseaseName;
+                    header.appendChild(title);
+
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'remove-btn text-red-500 hover:text-red-700 font-bold text-lg leading-none';
+                    removeBtn.innerHTML = '&times;';
+                    header.appendChild(removeBtn);
+                    
+                    diseaseBlock.appendChild(header);
+
+                    // --- Add Sub-Location ---
+                    if (diseaseData.subLocation) {
+                        const subLocEl = document.createElement('p');
+                        subLocEl.className = 'text-sm text-gray-600 font-medium pl-2';
+                        subLocEl.textContent = `Sub-Location: ${diseaseData.subLocation}`;
+                        diseaseBlock.appendChild(subLocEl);
+                    }
+
+                    // --- Add Details List ---
+                    const details = diseaseData.details || {};
+                    const detailKeys = Object.keys(details);
+                    if (detailKeys.length > 0) {
+                        const detailsContainer = document.createElement('ul');
+                        detailsContainer.className = 'mt-2 space-y-1 list-disc list-outside pl-6';
+                        
+                        detailKeys.forEach(key => {
+                            // Check if this feature is an indented one
+                            const featureDef = diseaseDetailsData[diseaseName]?.features.find(f => f.name === key) || 
+                                               diseaseDetailsData[diseaseName]?.features
+                                                   .flatMap(f => f.conditional ? Object.values(f.conditional).flat() : [])
+                                                   .find(f => f.name === key);
+                            
+                            // NEW: Check for Prague keys
+                            if (key === "Prague C" || key === "Prague M") {
+                                return; // Skip individual rendering
+                            }
+
+                            const li = document.createElement('li');
+                            li.className = 'text-sm text-gray-700';
+                            if (featureDef?.indented) {
+                                li.style.marginLeft = '1.5rem'; // Add indentation
+                                li.className = 'text-sm text-gray-700';
+                            }
+                            
+                            li.innerHTML = `<span class="font-medium">${key}:</span> ${details[key]}`;
+                            detailsContainer.appendChild(li);
+                        });
+
+                        // NEW: After the loop, handle Prague
+                        if (details["Prague C"] || details["Prague M"]) {
+                            const cVal = details["Prague C"] || '_';
+                            const mVal = details["Prague M"] || '_';
+                            const li = document.createElement('li');
+                            li.className = 'text-sm text-gray-700';
+                            li.innerHTML = `<span class="font-medium">Prague Classification:</span> C${cVal} M${mVal}`;
+                            detailsContainer.appendChild(li);
+                        }
+
+                        diseaseBlock.appendChild(detailsContainer);
+                    }
+                    // --- End of Details ---
+
+                    // NEW: Add Comments ---
+                    const comments = diseaseData.comments;
+                    if (comments) {
+                        const commentsEl = document.createElement('div');
+                        commentsEl.className = 'mt-2 pl-2';
+                        // Replace newlines with <br> for HTML rendering
+                        commentsEl.innerHTML = `<p class="text-sm text-gray-800"><span class="font-medium">Comments:</span> ${comments.replace(/\n/g, '<br>')}</p>`;
+                        diseaseBlock.appendChild(commentsEl);
+                    }
+                    // --- End of Comments ---
+
+                    diseasesContainer.appendChild(diseaseBlock);
+                });
+                reportContent.appendChild(diseasesContainer);
+            });
+        }
+        
+        /**
+         * Clears the entire report and all selections.
+         */
+        function clearReport() {
+            reportData = {};
+            currentSelection = null;
+            renderReport();
+            hideDetailsPane();
+            hideSubLocationPane();
+            // Deactivate all diagnosis buttons
+            document.querySelectorAll('.diagnosis-btn.active').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            // Clear overall remarks
+            document.getElementById('overall-remarks').value = '';
+        }
+
+        // --- Event Handlers ---
+
+        /**
+         * Handles clicking a main diagnosis button.
+         */
+        function handleDiagnosisClick(event) {
+            const button = event.target.closest('.diagnosis-btn');
+            if (!button) return;
+
+            const location = button.dataset.location;
+            const diagnosis = button.textContent;
+
+            // Add to data model with new structure
+            if (!reportData[location]) {
+                reportData[location] = {};
+            }
+            if (!reportData[location][diagnosis]) {
+                // NEW: Initialize with nested objects
+                reportData[location][diagnosis] = {
+                    subLocation: null,
+                    details: {},
+                    comments: "" // Add comments property
+                };
+            }
+ 
+            // Set current selection
+            currentSelection = { location: location, disease: diagnosis };
+
+            // --- Update UI ---
+            // 1. Deactivate all buttons first
+            document.querySelectorAll('.diagnosis-btn.active').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            // 2. Activate the clicked button
+            button.classList.add('active');
+            // 3. Populate and show sub-locations
+            populateSubLocations(location, diagnosis);
+            // 4. Populate and show details pane
+            populateDetails(location, diagnosis);
+            // 5. Render the report
+            renderReport();
+        }
+
+        /**
+         * Handles clicks within the report pane (for showing details or removing).
+         */
+        function handleReportClick(event) {
+            const removeBtn = event.target.closest('.remove-btn');
+            const title = event.target.closest('.report-item h4');
+
+            if (removeBtn) {
+                const item = removeBtn.closest('.report-item');
+                const { location, disease } = item.dataset;
+
+                // Remove from data
+                if (reportData[location] && reportData[location][disease]) {
+                    delete reportData[location][disease];
+                    if (Object.keys(reportData[location]).length === 0) {
+                        delete reportData[location];
+                    }
+                }
+                
+                // If we removed the currently selected item, hide details
+                if (currentSelection && currentSelection.location === location && currentSelection.disease === disease) {
+                    hideDetailsPane();
+                    hideSubLocationPane();
+                    document.querySelector(`.diagnosis-btn[data-location="${location}"]`).classList.remove('active'); // Find the right button to deactivate
+                }
+                
+                renderReport();
+            } else if (title) {
+                // Clicked on a title to re-open its details
+                const item = title.closest('.report-item');
+                const { location, disease } = item.dataset;
+                
+                // Find and "click" the corresponding diagnosis button
+                document.querySelectorAll('.diagnosis-btn').forEach(btn => {
+                    if (btn.dataset.location === location && btn.textContent === disease) {
+                        btn.click();
+                        btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                });
+            }
+        }
+
+        /**
+         * Handles clicks within the disease details pane (for selecting options).
+         */
+        function handleDetailClick(event) {
+            const button = event.target.closest('.detail-option-btn');
+            if (!button) return;
+
+            const featureContainer = button.closest('[data-feature]');
+            const featureName = featureContainer.dataset.feature;
+            const value = button.dataset.option;
+
+            // Handle deselection
+            if (button.classList.contains('active')) {
+                button.classList.remove('active');
+                saveDetailSelection(featureName, null);
+            } else {
+                // Handle single-choice selection
+                featureContainer.querySelectorAll('.detail-option-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                button.classList.add('active');
+                saveDetailSelection(featureName, value);
+            }
+        }
+
+        /**
+         * Handles text input for detail fields
+         */
+        function handleDetailInput(event) {
+            const input = event.target.closest('input[data-feature]');
+            if (!input) return;
+
+            const featureName = input.dataset.feature;
+            const value = input.value;
+            saveDetailSelection(featureName, value);
+        }
+
+        /**
+         * NEW: Handles clicks within the sub-location pane
+         */
+        function handleSubLocationClick(event) {
+            const button = event.target.closest('.detail-option-btn');
+            if (!button || !currentSelection) return;
+
+            const { location, disease } = currentSelection;
+            const value = button.dataset.option;
+
+            if (button.classList.contains('active')) {
+                // Deselect
+                button.classList.remove('active');
+                if (reportData[location]?.[disease]) {
+                    reportData[location][disease].subLocation = null;
+                }
+            } else {
+                // Select
+                subLocationOptions.querySelectorAll('.detail-option-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                button.classList.add('active');
+                if (reportData[location]?.[disease]) {
+                    reportData[location][disease].subLocation = value;
+                }
+            }
+            renderReport();
+        }
+
+        // --- Event Listeners ---
+
+        // Listen for clicks on all diagnosis buttons
+        document.querySelectorAll('.diagnosis-btn').forEach(btn => {
+            btn.addEventListener('click', handleDiagnosisClick);
+        });
+
+        // Listen for clicks within the report pane (event delegation)
+        reportContent.addEventListener('click', handleReportClick);
+
+        // Listen for clicks within the disease details pane
+        detailsContent.addEventListener('click', handleDetailClick);
+        
+        // Listen for text input in the disease details pane
+        detailsContent.addEventListener('input', (event) => {
+            if (event.target.tagName === 'INPUT') {
+                handleDetailInput(event);
+            }
+            // Real-time comments
+            if (event.target.id === 'additional-comments-textarea') {
+                handleCommentInput(event);
+            }
+        });
+
+        // NEW: Listen for clicks within the sub-location pane
+        subLocationPane.addEventListener('click', handleSubLocationClick);
+
+        // Listen for clear report button
+        clearReportBtn.addEventListener('click', clearReport);
+
+    </script>
+</body>
+</html>
+
+
