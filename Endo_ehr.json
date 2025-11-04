@@ -1,0 +1,668 @@
+{
+  "subLocationData": {
+    "Esophagus": [
+      "Upper",
+      "Mid",
+      "Lower"
+    ],
+    "GE Junction": [
+        "Above Z Line",
+        "At Z Line",
+        "Below Z Line"
+    ],
+    "Gastric": [
+      "Antrum",
+      "Fundus",
+      "Greater Curve",
+      "Lesser Curve",
+      "Pylorus",
+      "Body"
+    ],
+    "Duodenum": [
+      "D1",
+      "D2"
+    ]
+  },
+  "diseaseDetailsData": {
+    "Suspected Barrett's Esophagus": {
+      "subLocationLogic": {
+        "default": "Lower",
+        "disable": [
+          "Upper",
+          "Mid"
+        ]
+      },
+      "features": [
+        {
+          "name": "Biopsy taken",
+          "type": "options",
+          "options": [
+            "Yes",
+            "No"
+          ]
+        },
+        {
+          "name": "Texture",
+          "type": "options",
+          "options": [
+            "Velvety",
+            "Granular",
+            "Irregular surface pattern"
+          ]
+        },
+        {
+          "name": "Salmon Color Mucosa",
+          "type": "options",
+          "options": [
+            "Yes",
+            "No"
+          ]
+        },
+        {
+          "name": "Shape",
+          "type": "options",
+          "options": [
+            "Tongue like projection",
+            "None"
+          ]
+        },
+        {
+          "name": "Surface Architecture",
+          "type": "options",
+          "options": [
+            "Disrupted glandular pattern",
+            "Elevated Lesion",
+            "Depressed Lesions"
+          ]
+        },
+        {
+          "name": "Inflammation signs",
+          "type": "options",
+          "options": [
+            "Erythema",
+            "Edema",
+            "Erosions"
+          ]
+        },
+        {
+          "name": "Prague Classification",
+          "type": "prague",
+          "c_options": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10"
+          ],
+          "m_options": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            ">10"
+          ]
+        },
+        {
+          "name": "Mucosal patterns (WL)",
+          "type": "options",
+          "options": [
+            "Pit pattern irregularity",
+            "Nodularity",
+            "Ridging"
+          ]
+        },
+        {
+          "name": "Vascular patterns (WL)",
+          "type": "options",
+          "options": [
+            "Irregular",
+            "Abnormal Blood vessel distribution",
+            "Increased vascularity"
+          ]
+        },
+        {
+          "name": "Mucosal/Vascular patterns (NBI)",
+          "type": "options",
+          "options": [
+            "Dysplastic",
+            "Non-dysplastic"
+          ]
+        }
+      ]
+    },
+    "CROHNS DISEASE": {
+      "features": [
+        {
+          "name": "ulcer present",
+          "type": "options",
+          "options": [
+            "Yes",
+            "No"
+          ]
+        },
+        {
+          "name": "Stricture Present",
+          "type": "options",
+          "options": [
+            "Yes",
+            "No"
+          ],
+          "conditional": {
+            "Yes": [
+              {
+                "name": "Appearance",
+                "type": "options",
+                "options": [
+                  "Fibrotic",
+                  "Inflammatory"
+                ],
+                "indented": true
+              },
+              {
+                "name": "Passable",
+                "type": "options",
+                "options": [
+                  "Yes",
+                  "No"
+                ],
+                "indented": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "STRICTURE": {
+      "features": [
+        {
+          "name": "Etiology",
+          "type": "options",
+          "options": [
+            "Peptic",
+            "Malignant",
+            "Eosinophilic",
+            "Radiation-induced",
+            "Caustic",
+            "Other"
+          ]
+        },
+        {
+          "name": "Appearance",
+          "type": "options",
+          "options": [
+            "Smooth",
+            "Irregular",
+            "Web-like"
+          ]
+        },
+        {
+          "name": "Passable",
+          "type": "options",
+          "options": [
+            "Yes, with scope",
+            "Yes, with guidewire",
+            "No"
+          ]
+        }
+      ]
+    },
+    "ESOPHAGEAL CANDIDIASIS": {
+      "features": [
+        {
+          "name": "Kodsi Classification",
+          "type": "options",
+          "options": [
+            "Grade I (Few plaques)",
+            "Grade II (Multiple plaques)",
+            "Grade III (Confluent/linear)",
+            "Grade IV (Friable mucosa)"
+          ]
+        },
+        {
+          "name": "Biopsy taken",
+          "type": "options",
+          "options": [
+            "Yes",
+            "No"
+          ]
+        }
+      ]
+    },
+    "LESION": {
+      "features": [
+        {
+          "name": "Paris Classification (Type)",
+          "type": "options",
+          "options": [
+            "0-Ip (Polypoid, pedunculated)",
+            "0-Is (Polypoid, sessile)",
+            "0-IIa (Superficial, elevated)",
+            "0-IIb (Superficial, flat)",
+            "0-IIc (Superficial, depressed)",
+            "0-III (Excavated)"
+          ]
+        },
+        {
+          "name": "Size (mm)",
+          "type": "text",
+          "placeholder": "Enter size in mm"
+        },
+        {
+          "name": "Location (cm from incisors)",
+          "type": "text",
+          "placeholder": "Enter cm"
+        },
+        {
+          "name": "Biopsy taken",
+          "type": "options",
+          "options": [
+            "Yes",
+            "No"
+          ]
+        }
+      ]
+    },
+    "SUPERFICIAL NEOPLASM": {
+      "features": [
+        {
+          "name": "Paris Classification (Type)",
+          "type": "options",
+          "options": [
+            "0-Ip (Polypoid, pedunculated)",
+            "0-Is (Polypoid, sessile)",
+            "0-IIa (Superficial, elevated)",
+            "0-IIb (Superficial, flat)",
+            "0-IIc (Superficial, depressed)",
+            "0-III (Excavated)"
+          ]
+        },
+        {
+          "name": "Size (mm)",
+          "type": "text",
+          "placeholder": "Enter size in mm"
+        },
+        {
+          "name": "Location (cm from incisors)",
+          "type": "text",
+          "placeholder": "Enter cm"
+        },
+        {
+          "name": "NBI Appearance",
+          "type": "options",
+          "options": [
+            "Regular",
+            "Irregular",
+            "Absent"
+          ]
+        },
+        {
+          "name": "Biopsy taken",
+          "type": "options",
+          "options": [
+            "Yes",
+            "No"
+          ]
+        }
+      ]
+    },
+    "Tumor": {
+      "features": [
+        {
+          "name": "Appearance",
+          "type": "options",
+          "options": [
+            "Polypoidal",
+            "Ulcerated",
+            "Infiltrative",
+            "Fungating"
+          ]
+        },
+        {
+          "name": "Location (cm from incisors)",
+          "type": "text",
+          "placeholder": "Enter start cm"
+        },
+        {
+          "name": "Length (cm)",
+          "type": "text",
+          "placeholder": "Enter length in cm"
+        },
+        {
+          "name": "Biopsy taken",
+          "type": "options",
+          "options": [
+            "Yes",
+            "No"
+          ]
+        }
+      ]
+    },
+    "VARICES": {
+      "features": [
+        {
+          "name": "Grade",
+          "type": "options",
+          "options": [
+            "Grade I (Small, straight)",
+            "Grade II (Enlarged, tortuous)",
+            "Grade III (Large, coil-shaped)"
+          ]
+        },
+        {
+          "name": "Red Wale Signs",
+          "type": "options",
+          "options": [
+            "Yes",
+            "No"
+          ]
+        },
+        {
+          "name": "Active Bleeding",
+          "type": "options",
+          "options": [
+            "Yes",
+            "No"
+          ]
+        }
+      ]
+    },
+    "ESOPHAGITIS": {
+      "features": [
+        {
+          "name": "Grading (Los Angeles)",
+          "type": "options",
+          "options": [
+            "Grade A",
+            "Grade B",
+            "Grade C",
+            "Grade D",
+            "Not Applicable"
+          ]
+        },
+        {
+          "name": "Appearance",
+          "type": "options",
+          "options": [
+            "Erythema",
+            "Erosions",
+            "Ulcers",
+            "Friability"
+          ]
+        }
+      ]
+    },
+    "DIVERTICULUM": {
+      "features": [
+        {
+          "name": "Type",
+          "type": "options",
+          "options": [
+            "Zenker's",
+            "Traction",
+            "Epiphrenic",
+            "Other"
+          ]
+        },
+        {
+          "name": "Food Debris Present",
+          "type": "options",
+          "options": [
+            "Yes",
+            "No"
+          ]
+        }
+      ]
+    },
+    "BLEEDING OF UNKNOWN ORIGIN": {
+      "features": [
+        {
+          "name": "Active Bleeding Seen",
+          "type": "options",
+          "options": [
+            "Yes",
+            "No"
+          ]
+        }
+      ]
+    },
+    "CAUSTIC INJURY": {
+      "features": [
+        {
+          "name": "Severity (Zargar)",
+          "type": "options",
+          "options": [
+            "0",
+            "1",
+            "2a",
+            "2b",
+            "3a",
+            "3b"
+          ]
+        }
+      ]
+    },
+    "COELIAC DISEASE": {
+      "features": [
+        {
+          "name": "Scalloping of Folds",
+          "type": "options",
+          "options": [
+            "Yes",
+            "No"
+          ]
+        }
+      ]
+    },
+    "EROSIONS": {
+      "features": [
+        {
+          "name": "Appearance",
+          "type": "options",
+          "options": [
+            "Linear",
+            "Punctate",
+            "Superficial"
+          ]
+        }
+      ]
+    },
+    "ESOPHAGEAL INLET PATCH": {
+      "features": [
+        {
+          "name": "Biopsy taken",
+          "type": "options",
+          "options": [
+            "Yes",
+            "No"
+          ]
+        }
+      ]
+    },
+    "EXTRINSIC COMPRESSION": {
+      "features": [
+        {
+          "name": "Appearance",
+          "type": "options",
+          "options": [
+            "Smooth",
+            "Pulsatile",
+            "Fixed"
+          ]
+        }
+      ]
+    },
+    "FISTULA": {
+      "features": [
+        {
+          "name": "Location",
+          "type": "text",
+          "placeholder": "Describe location"
+        }
+      ]
+    },
+    "NODULARITY": {
+      "features": [
+        {
+          "name": "Appearance",
+          "type": "options",
+          "options": [
+            "Fine",
+            "Coarse",
+            "Warty"
+          ]
+        }
+      ]
+    },
+    "POLYPOSIS": {
+      "features": [
+        {
+          "name": "Appearance",
+          "type": "options",
+          "options": [
+            "Sessile",
+            "Pedunculated",
+            "Multiple"
+          ]
+        }
+      ]
+    },
+    "POSTOPERATIVE APPEARANCE": {
+      "features": [
+        {
+          "name": "Anastomosis",
+          "type": "options",
+          "options": [
+            "Intact",
+            "Strictured",
+            "Leaking"
+          ]
+        }
+      ]
+    },
+    "SUSPECTED ESOPHAGEAL MOTILITY DISORDER": {
+      "features": [
+        {
+          "name": "Findings",
+          "type": "options",
+          "options": [
+            "Corkscrew esophagus",
+            "Achalasia-like",
+            "Spasms"
+          ]
+        }
+      ]
+    },
+    "ulcer": {
+      "features": [
+        {
+          "name": "Appearance",
+          "type": "options",
+          "options": [
+            "Clean base",
+            "Active bleeding",
+            "Visible vessel"
+          ]
+        }
+      ]
+    },
+    "GASTROPATHY": {
+      "features": [
+        {
+          "name": "Appearance",
+          "type": "options",
+          "options": [
+            "Erythematous",
+            "Erosive",
+            "Hemorrhagic",
+            "Portal Hypertensive"
+          ]
+        }
+      ]
+    },
+    "DUODENOPATHY": {
+      "features": [
+        {
+          "name": "Appearance",
+          "type": "options",
+          "options": [
+            "Erythema",
+            "Erosions",
+            "Scalloping",
+            "Nodularity"
+          ]
+        }
+      ]
+    },
+    "DUODENAL BULB DEFORMITY": {
+      "subLocationLogic": {
+        "default": "D1",
+        "disable": [
+          "D2"
+        ]
+      },
+      "features": [
+        {
+          "name": "Scarring",
+          "type": "options",
+          "options": [
+            "Yes",
+            "No"
+          ]
+        },
+        {
+          "name": "pseudodiverticulum",
+          "type": "options",
+          "options": [
+            "Yes",
+            "No"
+          ]
+        },
+        {
+          "name": "Shelf-Like deformity",
+          "type": "options",
+          "options": [
+            "Yes",
+            "No"
+          ]
+        },
+        {
+          "name": "Luminal Narrowing",
+          "type": "options",
+          "options": [
+            "Yes",
+            "No"
+          ]
+        },
+        {
+          "name": "Scope passing into D2",
+          "type": "options",
+          "options": [
+            "Yes",
+            "No"
+          ]
+        },
+        {
+          "name": "Mucosal Bridge",
+          "type": "options",
+          "options": [
+            "Yes",
+            "No"
+          ]
+        }
+      ]
+    }
+  }
+}
