@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AIG Endoscopy Report</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: Inter, system-ui, sans-serif; }
+  .loc-column { min-height: 320px; max-height: 420px; overflow:auto; }
+  .pill, .attr-pill {
+    cursor:pointer; border:1px solid #93c5fd; background:#fff;
+    color:#1e40af; padding:.35rem .6rem; border-radius:.5rem;
+    font-size:.875rem; transition:all .15s;
+  }
+  .pill:hover, .attr-pill:hover { background:#eff6ff; }
+  .pill-selected, .attr-pill.selected {
+    background:#2563eb; color:#fff; border-color:#1d4ed8;
+  }
+</style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+<div class="max-w-full mx-auto p-6">
+  <h1 class="text-2xl font-bold text-center text-blue-700 mb-6">AIG Endoscopy Report</h1>
+
+  <div class="mb-3 flex items-center justify-between gap-4">
+    <div class="text-sm text-gray-600">Load CSV mapping (select your CSV):</div>
+    <div class="flex items-center gap-2">
+      <input id="csvFile" type="file" accept=".csv" class="text-sm" />
+      <button id="loadSample" class="px-3 py-1 rounded border text-sm bg-white hover:bg-gray-50">Load sample</button>
+      <div id="csvNote" class="text-sm text-yellow-700"></div>
+    </div>
+  </div>
+
+  <div class="flex gap-6">
+    <!-- LEFT -->
+    <div class="w-3/4 space-y-4">
+      <div class="bg-white p-4 rounded shadow">
+        <div class="grid grid-cols-4 gap-4">
+          <div><h3 class="text-blue-600 font-semibold mb-2">Esophagus</h3><div id="col-esophagus" class="loc-column space-y-2"></div></div>
+          <div><h3 class="text-blue-600 font-semibold mb-2">GE Junction</h3><div id="col-gejunction" class="loc-column space-y-2"></div></div>
+          <div><h3 class="text-blue-600 font-semibold mb-2">Gastric</h3><div id="col-stomach" class="loc-column space-y-2"></div></div>
+          <div><h3 class="text-blue-600 font-semibold mb-2">Duodenum</h3><div id="col-duodenum" class="loc-column space-y-2"></div></div>
+        </div>
+        <div class="mt-4 bg-blue-50 p-4 rounded">
+          <div class="font-medium mb-2 text-sm text-gray-700">Sub-Location</div>
+          <div id="subloc-chips" class="flex gap-2 flex-wrap"></div>
+        </div>
+      </div>
+
+      <div id="detailsCard" class="bg-white p-4 rounded shadow hidden">
+        <div class="flex justify-between items-center mb-3">
+          <div>
+            <div class="text-lg font-semibold" id="detailsTitle">Details</div>
+            <div class="text-sm text-gray-500" id="detailsSubTitle"></div>
+          </div>
+          <button id="closeDetails" class="px-3 py-1 border rounded text-sm">Close</button>
+        </div>
+        <div id="detailsSections" class="space-y-4"></div>
+        <div class="mt-4">
+          <label class="block font-medium mb-1">Additional Comments</label>
+          <textarea id="diseaseComments" rows="3" class="w-full p-2 border rounded" placeholder="Comments..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="w-1/4">
+      <div class="bg-white p-4 rounded shadow">
+        <div class="flex justify-between items-center mb-3">
+          <h2 class="text-lg font-semibold">Report</h2>
+          <div class="flex gap-2">
+            <button id="downloadJSON" class="bg-green-600 text-white px-3 py-1 rounded text-sm">Download JSON</button>
+            <button id="clearReport" class="bg-red-600 text-white px-3 py-1 rounded text-sm">Clear</button>
+          </div>
+        </div>
+        <div id="reportContent" class="space-y-4 min-h-[40vh]"></div>
+      </div>
+      <div class="bg-white mt-4 p-4 rounded shadow">
+        <label class="block font-medium mb-1">Overall Remarks</label>
+        <textarea id="overallRemarks" rows="4" class="w-full p-2 border rounded" placeholder="Overall remarks"></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function parseCSV(t){const r=[],n=[];let e="",a=!1;for(let s=0;s<t.length;s++){const i=t[s];if(i=='"'){if(a&&t[s+1]=='"'){e+='"',s++;continue}a=!a;continue}if(!a&&(i=="\r"||i=="\n")){if(i=="\r"&&t[s+1]=="\n")s++;n.push(e),r.push(n.slice()),n.length=0,e="";continue}if(!a&&i==","){n.push(e),e="";continue}e+=i}return(e!==""||n.length)&&(n.push(e),r.push(n)),!r.length?[]:(h=r[0].map(h=>h.trim()),r.slice(1).filter(u=>u.some(c=>c.trim())).map(u=>{const c={};return h.forEach((h,l)=>c[h||`col${l}`]=(u[l]||"").trim()),c}))}
+function expandRangeToken(t){const m=t.match(/^Range\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\)$/i);if(!m)return null;const a=parseInt(m[1]),b=parseInt(m[2]),arr=[];for(let i=a;i<b;i++)arr.push(""+i);return arr;}
+const SUBLOCATIONS={'Esophagus':['Cricopharynx','Upper','Middle','Lower','Whole esophagus','Anastomosis'],'GE Junction':['Z-line','Hiatal hernia','Diaphragmatic pinch'],'Stomach':['Cardia','Fundus','Body','Incisura/angulus','Antrum','Prepyloric region','Pylorus','Whole stomach','Anastomosis','Hiatal hernia','Diaphragma orifice','Greater curve','Lesser curve','Anterior wall','Posterior wall'],'Duodenum':['Duodenal bulb(D1)','D2','D3','D4','Upper duodenal knee/ superior duodenal angulus','Ampullary region','Major papilla','Minor papilla','Lower duodenal knee/ inferior duodenal angulus','Anastomosis','Proximal','Distal']};
+let DISEASES={},report={},active=null,selectedMainLoc='Esophagus',selectedSubLoc=null;
+function isX(v){return v&&(""+v).toLowerCase().includes("x");}
+function buildFromCSV(rows){DISEASES={};rows.forEach(r=>{const d=(r["Diagnosis"]||"").trim();if(!d)return;if(!DISEASES[d])DISEASES[d]={sections:{},locations:{},default_subloc:(r["Default_Sub_Location"]||"").trim()};["Esophagus","GE Junction","Stomach","Duodenum"].forEach(loc=>{if(isX(r[loc]))DISEASES[d].locations[loc]=true});const sec=(r["Section"]||"General").trim(),sub=(r["Subsection"]||"").trim();if(!DISEASES[d].sections[sec])DISEASES[d].sections[sec]={rows:[],subsections:{}};DISEASES[d].sections[sec].rows.push(r);if(sub){if(!DISEASES[d].sections[sec].subsections[sub])DISEASES[d].sections[sec].subsections[sub]=[];DISEASES[d].sections[sec].subsections[sub].push(r);}});}
+function populateColumns(){["col-esophagus","col-gejunction","col-stomach","col-duodenum"].forEach(id=>document.getElementById(id).innerHTML="");Object.keys(DISEASES).sort().forEach(name=>{const d=DISEASES[name];Object.keys(d.locations).forEach(loc=>{const id=loc==="Esophagus"?"col-esophagus":loc==="GE Junction"?"col-gejunction":loc==="Stomach"?"col-stomach":"col-duodenum";const b=document.createElement("button");b.className="w-full px-3 py-2 border rounded text-sm bg-white hover:bg-blue-50";b.textContent=name;b.onclick=()=>{selectedMainLoc=loc;renderSubLocChips();addOrOpenDisease(loc,name)};document.getElementById(id).appendChild(b);});});}
+function renderSubLocChips(){const el=document.getElementById("subloc-chips");el.innerHTML="";(SUBLOCATIONS[selectedMainLoc]||[]).forEach(s=>{const chip=document.createElement("button");chip.className="pill";chip.textContent=s;chip.onclick=()=>{selectedSubLoc=s;Array.from(el.children).forEach(c=>c.classList.remove("pill-selected"));chip.classList.add("pill-selected");if(active&&report[active.loc]&&report[active.loc].diseases[active.disease]){report[active.loc].diseases[active.disease].sublocation=s;renderReport();}};el.appendChild(chip);});if(selectedSubLoc&&(SUBLOCATIONS[selectedMainLoc]||[]).includes(selectedSubLoc)){Array.from(el.children).forEach(c=>{if(c.textContent===selectedSubLoc)c.classList.add("pill-selected")})}}
+function addOrOpenDisease(loc,disease){if(!report[loc])report[loc]={diseases:{}};if(!report[loc].diseases[disease]){report[loc].diseases[disease]={sections:{},comments:"",sublocation:""};if(DISEASES[disease]&&DISEASES[disease].default_subloc){report[loc].diseases[disease].sublocation=DISEASES[disease].default_subloc;selectedSubLoc=DISEASES[disease].default_subloc;renderSubLocChips();}}openDetails(loc,disease);renderReport();}
+function openDetails(loc,disease){active={loc,disease};document.getElementById("detailsCard").classList.remove("hidden");document.getElementById("detailsTitle").textContent=disease;const s=(report[loc].diseases[disease].sublocation||"")||(selectedSubLoc||"");document.getElementById("detailsSubTitle").textContent="Sub-Location: "+(s||"—");renderDetailsSections(disease);document.getElementById("diseaseComments").value=report[loc].diseases[disease].comments||"";}
+document.getElementById("closeDetails").onclick=()=>{active=null;document.getElementById("detailsCard").classList.add("hidden");};
+function evaluateConditional(c){if(!c||!c.trim())return true;const s=c.trim();const loc=s.match(/^Location\(\s*Main\s*=\s*(.+?)\s*\)$/i);if(loc)return selectedMainLoc===loc[1];const sec=s.match(/^Section\(\s*([^=]+?)\s*=\s*(.+?)\s*\)$/i);if(sec){if(!active)return false;const m=report[active.loc]?.diseases[active.disease];if(!m)return false;return !!(m.sections[sec[1]]?.attrs[sec[2]]);}const sub=s.match(/^Subsection\(\s*([^=]+?)\s*=\s*(.+?)\s*\)$/i);if(sub){if(!active)return false;const m=report[active.loc]?.diseases[active.disease];if(!m)return false;return Object.values(m.sections).some(sec=>sec.subsections?.[sub[1]]?.attrs?.[sub[2]]);}return false;}
+function renderDetailsSections(d){const c=document.getElementById("detailsSections");c.innerHTML="";const defs=DISEASES[d]?.sections||{};Object.keys(defs).forEach(sec=>{const box=document.createElement("div");box.className="p-3 border rounded";const t=document.createElement("div");t.className="font-semibold mb-2";t.textContent=sec;box.appendChild(t);defs[sec].rows.filter(r=>!(r["Subsection"]||"").trim()).forEach(r=>{if(!evaluateConditional(r["Conditional_on"]))return;box.appendChild(renderRow(r,sec,null));});Object.keys(defs[sec].subsections||{}).forEach(sub=>{const sb=document.createElement("div");sb.className="mt-3 p-2 border rounded bg-gray-50";const st=document.createElement("div");st.className="font-semibold text-sm mb-2";st.textContent=sub;sb.appendChild(st);defs[sec].subsections[sub].forEach(r=>{if(!evaluateConditional(r["Conditional_on"]))return;sb.appendChild(renderRow(r,sec,sub));});box.appendChild(sb);});c.appendChild(box);});document.getElementById("diseaseComments").oninput=e=>{if(!active)return;report[active.loc].diseases[active.disease].comments=e.target.value;renderReport();};}
+function renderRow(row,sec,sub){const wrap=document.createElement("div");wrap.className="mt-2";const attrs=Object.keys(row).filter(k=>/^Attribute/i.test(k)).map(k=>row[k]).filter(v=>v&&v.trim());const multi=(row["Multi_Attribute"]||"").toLowerCase().includes("x")||row["Multi_Attribute"].toLowerCase().includes("yes");attrs.forEach(a=>{if(/^Range\(/i.test(a)){(expandRangeToken(a)||[]).forEach(x=>wrap.appendChild(makePill(x,sec,sub,multi)));return;}const tokens=a.trim().split(/\s+/);if(tokens.includes("int_box")||tokens.includes("alphanum_box"))wrap.appendChild(renderBox(tokens,sec,sub,row));else wrap.appendChild(makePill(a,sec,sub,multi));});return wrap;}
+function renderBox(tokens,sec,sub,row){const boxType=tokens.includes("int_box")?"int_box":"alphanum_box";const idx=tokens.indexOf(boxType);const left=tokens.slice(0,idx).join(" ").trim();const right=tokens.slice(idx+1).join(" ").trim();const wrap=document.createElement("div");wrap.className="flex items-center gap-2 mt-2";if(left){const l=document.createElement("div");l.className="text-sm";l.textContent=left;wrap.appendChild(l);}const inp=document.createElement("input");inp.type=boxType==="int_box"?"number":"text";inp.className="border rounded p-1 w-28";const key=tokens.join("_");inp.oninput=()=>{if(!active)return;const val=inp.value.trim();let label="";if(left&&right)label=left+": "+val+" "+right;else if(left)label=left+": "+val;else if(right)label=val+" "+right;else label=val;const model=report[active.loc].diseases[active.disease];if(!model.sections[sec])model.sections[sec]={attrs:{},inputs:[],subsections:{}};if(sub){if(!model.sections[sec].subsections[sub])model.sections[sec].subsections[sub]={attrs:{},inputs:[]};const subs=model.sections[sec].subsections[sub];subs.inputs=subs.inputs.filter(i=>i.rawKey!==key);if(val)subs.inputs.push({rawKey:key,label,value:val});}else{const s=model.sections[sec];s.inputs=s.inputs||[];s.inputs=s.inputs.filter(i=>i.rawKey!==key);if(val)s.inputs.push({rawKey:key,label,value:val});}renderReport();};wrap.appendChild(inp);if(right){const r=document.createElement("div");r.className="text-sm";r.textContent=right;wrap.appendChild(r);}return wrap;}
+function makePill(attr,sec,sub,multi){const b=document.createElement("button");b.className="attr-pill";b.textContent=attr;const m=report[active?.loc]?.diseases[active?.disease];if(m){const ref=sub?m.sections[sec]?.subsections?.[sub]?.attrs:m.sections[sec]?.attrs;if(ref&&ref[attr])b.classList.add("selected");}b.onclick=()=>{const mod=report[active.loc].diseases[active.disease];if(!mod.sections[sec])mod.sections[sec]={attrs:{},inputs:[],subsections:{}};if(sub){if(!mod.sections[sec].subsections[sub])mod.sections[sec].subsections[sub]={attrs:{},inputs:[]};const t=mod.sections[sec].subsections[sub].attrs;if(multi){t[attr]?delete t[attr]:t[attr]=true;}else{Object.keys(t).forEach(k=>delete t[k]);t[attr]=true;}}else{const t=mod.sections[sec].attrs;if(multi){t[attr]?delete t[attr]:t[attr]=true;}else{Object.keys(t).forEach(k=>delete t[k]);t[attr]=true;}}renderDetailsSections(active.disease);renderReport();};return b;}
+function renderReport(){const rc=document.getElementById("reportContent");rc.innerHTML="";Object.keys(report).forEach(loc=>{const blk=document.createElement("div");blk.className="border rounded bg-gray-50 p-2";const h=document.createElement("div");h.className="text-blue-700 font-semibold mb-2";h.textContent=loc;blk.appendChild(h);Object.keys(report[loc].diseases).forEach(dn=>{const e=report[loc].diseases[dn];const card=document.createElement("div");card.className="bg-white p-3 rounded border relative";const x=document.createElement("button");x.className="absolute right-2 top-2 text-red-500";x.textContent="x";x.onclick=()=>{delete report[loc].diseases[dn];if(!Object.keys(report[loc].diseases).length)delete report[loc];if(active?.disease===dn)active=null;renderReport();document.getElementById('detailsCard').classList.add('hidden');};card.appendChild(x);const title=document.createElement("a");title.href="#";title.className="font-semibold text-sm";title.textContent=dn;title.onclick=e2=>{e2.preventDefault();openDetails(loc,dn);};card.appendChild(title);const meta=document.createElement("div");meta.className="text-xs text-gray-600 mt-1";meta.innerHTML="<strong>Sub-Location:</strong> "+(e.sublocation||"");card.appendChild(meta);const ul=document.createElement("ul");ul.className="list-disc pl-5 mt-2 text-xs text-gray-700";let any=false;Object.keys(e.sections||{}).forEach(sn=>{const s=e.sections[sn];const hasAttrs=Object.keys(s.attrs||{}).length>0;const hasInputs=(s.inputs||[]).length>0;const hasSubs=Object.keys(s.subsections||{}).length>0;if(!(hasAttrs||hasInputs||hasSubs))return;any=true;const sli=document.createElement("li");sli.textContent=sn;const subul=document.createElement("ul");subul.className="list-disc pl-6";Object.keys(s.attrs||{}).forEach(a=>{const li=document.createElement("li");li.textContent=a;subul.appendChild(li);});(s.inputs||[]).forEach(i=>{const li=document.createElement("li");li.textContent=i.label;subul.appendChild(li);});Object.keys(s.subsections||{}).forEach(subn=>{const sub=s.subsections[subn];const subli=document.createElement("li");subli.textContent=subn;const ssubul=document.createElement("ul");ssubul.className="list-disc pl-6";Object.keys(sub.attrs||{}).forEach(a=>{const li=document.createElement("li");li.textContent=a;ssubul.appendChild(li);});(sub.inputs||[]).forEach(i=>{const li=document.createElement("li");li.textContent=i.label;ssubul.appendChild(li);});if(ssubul.children.length)subli.appendChild(ssubul);subul.appendChild(subli);});if(subul.children.length)sli.appendChild(subul);ul.appendChild(sli);});if(e.comments){const cli=document.createElement("li");cli.textContent="Comments: "+e.comments;ul.appendChild(cli);any=true;}if(any)card.appendChild(ul);blk.appendChild(card);});rc.appendChild(blk);});}
+document.getElementById("clearReport").onclick=()=>{report={};active=null;document.getElementById("detailsCard").classList.add("hidden");renderReport();};
+document.getElementById("downloadJSON").onclick=()=>{const blob=new Blob([JSON.stringify(report,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="endoscopy_report_"+new Date().toISOString().replace(/[:.]/g,"_")+".json";a.click();URL.revokeObjectURL(url);};
+document.getElementById("csvFile").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const rows=parseCSV(r.result);buildFromCSV(rows);populateColumns();renderSubLocChips();renderReport();document.getElementById("csvNote").textContent="CSV loaded.";};r.readAsText(f);});
+document.getElementById("loadSample").onclick=()=>{const sample=`Diagnosis,Section,Subsection,Default_Sub_Location,Conditional_on,Multi_Attribute,Default_Attr,Esophagus,GE Junction,Stomach,Duodenum,Attribute1,Attribute2,Attribute3
+Suspected Barrett's Esophagus,Biopsy taken,,Lower,,,Yes,x,,,,"Yes","No"
+Suspected Barrett's Esophagus,Texture,,,"",x,,x,,,,"Velvety","Granular","Irregular surface pattern"
+Suspected Barrett's Esophagus,Prague Classification,,,"",,,"x",,,"Range(0,10)"
+Caustic Injury,Substance Type,,,"",,,"","x",,,"alphanum_box"
+Caustic Injury,Time_since_ingestion,,,"",,,"","x",,,"int_box hours"
+Esophagitis,Endoscope insertion depth,,,"",,,"x",,,"int_box cm from incisors"
+Esophagitis,Procedure Intervention,Type,,,"",x,"x",,,"Other alphanum_box"
+Esophagitis,Specific Lesions,Type,,,"",x,"x",,,"mucosal breaks","ring"
+Esophagitis,Specific Lesions,Extent / distribution,,,"",x,"x",,,"patchy","diffuse"
+`;const rows=parseCSV(sample);buildFromCSV(rows);populateColumns();renderSubLocChips();renderReport();document.getElementById("csvNote").textContent="Sample loaded.";};
+(function init(){renderSubLocChips();document.getElementById("csvNote").textContent="Load your CSV or click Load sample.";})();
+</script>
+</body>
+</html>
+
