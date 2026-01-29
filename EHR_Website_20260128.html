@@ -1,0 +1,2234 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AIG Endoscopy Report</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body { font-family: Inter, system-ui, sans-serif; }
+    .loc-column { min-height: 320px; max-height: 420px; overflow:auto; }
+    .pill, .attr-pill {
+      cursor:pointer; border:1px solid #93c5fd; background:#fff;
+      color:#1e40af; padding:.35rem .6rem; border-radius:.5rem;
+      font-size:.875rem; transition:all .15s;
+    }
+    .pill:hover, .attr-pill:hover { background:#eff6ff; }
+    .pill-selected, .attr-pill.selected {
+      background:#2563eb; color:#fff; border-color:#1d4ed8;
+    }
+    .left-disease {
+      display:block; text-align:left; width:100%;
+      padding:.5rem .75rem; border-radius:.5rem;
+      border:1px solid transparent; background:#fff; color:#1f2937;
+    }
+    .left-disease:hover { background:#f1f5f9; }
+    .left-disease.selected {
+      background:#2563eb; color:#fff; border-color:#1e40af;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+<div class="max-w-full mx-auto p-6">
+  <h1 class="text-2xl font-bold text-center text-blue-700 mb-6">AIG Endoscopy Report</h1>
+
+  <!-- Retrospective Analysis Controls -->
+  <div class="mb-3 bg-white p-4 rounded shadow">
+    <div class="flex items-center gap-6 flex-wrap">
+      <!-- Load Videos Folder Button -->
+      <button id="loadVideoFolder" class="bg-purple-600 text-white px-3 py-2 rounded text-sm hover:bg-purple-700">
+        📁 Load Videos Folder
+      </button>
+      
+      <!-- UHID Dropdown -->
+      <div class="flex items-center gap-2">
+        <label class="text-sm font-medium text-gray-700">UHID:</label>
+        <select id="uhidSelect" class="border rounded p-2 text-sm min-w-[150px]">
+          <option value="">-- Select UHID --</option>
+        </select>
+      </div>
+      
+      <!-- Video Dropdown -->
+      <div class="flex items-center gap-2">
+        <label class="text-sm font-medium text-gray-700">Video:</label>
+        <select id="videoSelect" class="border rounded p-2 text-sm min-w-[200px]" disabled>
+          <option value="">-- Select Video --</option>
+        </select>
+      </div>
+      
+      <!-- Frame Range Inputs -->
+      <div class="flex items-center gap-2">
+        <label class="text-sm font-medium text-gray-700">Start Frame:</label>
+        <input type="number" id="startFrame" class="border rounded p-2 text-sm w-24" min="0" step="1" placeholder="0" />
+      </div>
+      
+      <div class="flex items-center gap-2">
+        <label class="text-sm font-medium text-gray-700">End Frame:</label>
+        <input type="number" id="endFrame" class="border rounded p-2 text-sm w-24" min="0" step="1" placeholder="0" />
+      </div>
+      
+      <!-- Frame Count and Duration Display -->
+      <div class="flex items-center gap-4 text-sm">
+        <span class="text-gray-700"># Frames: <strong id="frameCount">0</strong></span>
+        <span class="text-gray-700">Duration: <strong id="durationSec">0.00</strong> sec</span>
+      </div>
+      
+      <!-- Segmentation Frame Input -->
+      <div class="flex items-center gap-2">
+        <label class="text-sm font-medium text-gray-700">Segmentation Frame:</label>
+        <input type="number" id="segmentationFrame" class="border rounded p-2 text-sm w-24" min="0" step="1" placeholder="0" />
+      </div>
+      
+      <!-- CSV Loading (moved to right side) -->
+      <div class="flex items-center gap-2 ml-auto">
+        <input id="csvFile" type="file" accept=".csv" class="text-sm" />
+        <button id="loadSample" class="px-3 py-1 rounded border text-sm bg-white hover:bg-gray-50">Load sample</button>
+      </div>
+    </div>
+    <div id="csvNote" class="text-sm text-yellow-700 mt-2"></div>
+  </div>
+
+  <div class="flex gap-6">
+    <!-- LEFT -->
+    <div class="w-3/4 space-y-4">
+      <div class="bg-white p-4 rounded shadow">
+        <div class="grid grid-cols-4 gap-4">
+          <div>
+            <h3 class="text-blue-600 font-semibold mb-2">Esophagus</h3>
+            <div id="col-esophagus" class="loc-column space-y-2"></div>
+          </div>
+          <div>
+            <h3 class="text-blue-600 font-semibold mb-2">GE Junction</h3>
+            <div id="col-gejunction" class="loc-column space-y-2"></div>
+          </div>
+          <div>
+            <h3 class="text-blue-600 font-semibold mb-2">Stomach</h3>
+            <div id="col-stomach" class="loc-column space-y-2"></div>
+          </div>
+          <div>
+            <h3 class="text-blue-600 font-semibold mb-2">Duodenum</h3>
+            <div id="col-duodenum" class="loc-column space-y-2"></div>
+          </div>
+        </div>
+        <div class="mt-4 bg-blue-50 p-4 rounded">
+          <div class="font-medium mb-2 text-sm text-gray-700">
+            Sub-Location <span class="text-xs italic text-gray-500">(multi-select)</span>
+          </div>
+          <div id="subloc-chips" class="flex gap-2 flex-wrap"></div>
+        </div>
+      </div>
+
+      <div id="detailsCard" class="bg-white p-4 rounded shadow hidden">
+        <div class="mb-3">
+          <div class="text-lg font-semibold" id="detailsTitle">Details</div>
+          <div class="text-sm text-gray-500" id="detailsSubTitle"></div>
+        </div>
+        
+        <!-- Disease-specific Frame Controls -->
+        <div class="mb-4 p-3 bg-blue-50 rounded border border-blue-200">
+          <div class="flex items-center gap-4 flex-wrap">
+            <div class="flex items-center gap-2">
+              <label class="text-sm font-medium text-gray-700">Start Frame:</label>
+              <input type="number" id="diseaseStartFrame" class="border rounded p-1 text-sm w-20" min="0" step="1" placeholder="0" />
+            </div>
+            <div class="flex items-center gap-2">
+              <label class="text-sm font-medium text-gray-700">End Frame:</label>
+              <input type="number" id="diseaseEndFrame" class="border rounded p-1 text-sm w-20" min="0" step="1" placeholder="0" />
+            </div>
+            <div class="flex items-center gap-3 text-sm">
+              <span class="text-gray-700"># Frames: <strong id="diseaseFrameCount">0</strong></span>
+              <span class="text-gray-700">Duration: <strong id="diseaseDurationSec">0.00</strong> sec</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <label class="text-sm font-medium text-gray-700">Segmentation Frame:</label>
+              <input type="number" id="diseaseSegmentationFrame" class="border rounded p-1 text-sm w-20" min="0" step="1" placeholder="0" />
+            </div>
+          </div>
+        </div>
+        
+        <div id="detailsSections" class="space-y-4"></div>
+        <div class="mt-4">
+          <label class="block font-medium mb-1">Additional Comments</label>
+          <textarea id="diseaseComments" rows="3" class="w-full p-2 border rounded" placeholder="Comments..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="w-1/4">
+      <div class="bg-white p-4 rounded shadow">
+        <div class="flex justify-between items-center mb-3">
+          <h2 class="text-lg font-semibold">Report</h2>
+          <div class="flex gap-2">
+            <button id="saveJSON" class="bg-green-600 text-white px-3 py-1 rounded text-sm">Save</button>
+            <button id="loadSavedJSON" class="bg-blue-600 text-white px-3 py-1 rounded text-sm">Load Saved JSON</button>
+            <button id="clearReport" class="bg-red-600 text-white px-3 py-1 rounded text-sm">Clear</button>
+          </div>
+        </div>
+        <div id="reportContent" class="space-y-4 min-h-[40vh]"></div>
+      </div>
+      <div class="bg-white mt-4 p-4 rounded shadow">
+        <label class="block font-medium mb-1">Overall Remarks</label>
+        <textarea id="overallRemarks" rows="4" class="w-full p-2 border rounded" placeholder="Overall remarks"></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- hidden file input for loading saved JSON -->
+<input id="jsonFile" type="file" accept="application/json, .json" style="display:none" />
+
+<script>
+/* ---------- Debug Logging ---------- */
+const DEBUG = true; // Set to false to disable console logging
+function log(...args) {
+  if (DEBUG) console.log('[EHR Debug]', ...args);
+}
+function logError(...args) {
+  console.error('[EHR Error]', ...args);
+}
+function logWarn(...args) {
+  console.warn('[EHR Warning]', ...args);
+}
+
+/* ---------- CSV parsing ---------- */
+function parseCSV(text){
+  log('Starting CSV parse, text length:', text.length);
+  
+  if (!text || typeof text !== 'string') {
+    logError('Invalid CSV input: text is empty or not a string');
+    return [];
+  }
+  
+  const rows = [];
+  let row = [];
+  let cur = "";
+  let inQuotes = false;
+
+  for(let i=0;i<text.length;i++){
+    const ch = text[i];
+    if(ch === '"'){
+      if(inQuotes && text[i+1] === '"'){ cur += '"'; i++; continue; }
+      inQuotes = !inQuotes;
+      continue;
+    }
+    if(!inQuotes && (ch === "\r" || ch === "\n")){
+      if(ch === "\r" && text[i+1] === "\n") i++;
+      row.push(cur);
+      rows.push(row);
+      row = [];
+      cur = "";
+      continue;
+    }
+    if(!inQuotes && ch === ","){
+      row.push(cur);
+      cur = "";
+      continue;
+    }
+    cur += ch;
+  }
+  if(cur !== "" || row.length){
+    row.push(cur);
+    rows.push(row);
+  }
+  if(!rows.length) {
+    logWarn('CSV parsing resulted in no rows');
+    return [];
+  }
+
+  const headers = rows[0].map(h => (h || "").trim());
+  log('CSV headers found:', headers);
+  
+  // Validate required headers
+  const requiredHeaders = ['Diagnosis', 'Section'];
+  const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
+  if (missingHeaders.length > 0) {
+    logError('CSV missing required headers:', missingHeaders);
+  }
+  
+  const result = rows.slice(1)
+    .filter(r => r.some(c => (c || "").trim()))
+    .map(r => {
+      const obj = {};
+      headers.forEach((h, idx) => {
+        obj[h || ("col"+idx)] = (r[idx] || "").trim();
+      });
+      return obj;
+    });
+  
+  log('CSV parsing complete. Rows parsed:', result.length);
+  return result;
+}
+
+function expandRangeToken(t){
+  const m = t.match(/^Range\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\)$/i);
+  if(!m) return null;
+  const start = parseInt(m[1],10);
+  const end   = parseInt(m[2],10);
+  const arr = [];
+  for(let i=start;i<end;i++) arr.push(""+i);
+  return arr;
+}
+
+function isX(v){ return v && (""+v).toLowerCase().includes("x"); }
+function isMultiFlag(v){
+  if(!v) return false;
+  const s = (""+v).toLowerCase();
+  return s.includes("x") || s.includes("yes") || s.includes("multi");
+}
+
+/* ---------- hint helper (multiline + images, strip filenames, size from name) ---------- */
+function createHintElement(text){
+  const wrapper = document.createElement("div");
+  wrapper.className = "text-xs italic text-gray-500 mb-1";
+
+  const imgRegex = /([A-Za-z0-9_.\-\/]+?\.(?:png|jpe?g|webp))/ig;
+  const imgs = [];
+  let m;
+
+  while ((m = imgRegex.exec(text)) !== null) {
+    imgs.push(m[1]);
+  }
+
+  // remove filenames from the hint text
+  let cleanedText = text.replace(imgRegex, "");
+  cleanedText = cleanedText
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+
+  if(cleanedText){
+    const textDiv = document.createElement("div");
+    textDiv.className = "whitespace-pre-line";
+    textDiv.textContent = cleanedText;
+    wrapper.appendChild(textDiv);
+  }
+
+  if (imgs.length) {
+    const imgRow = document.createElement("div");
+    imgRow.className = "mt-1 flex flex-wrap gap-2";
+    imgs.forEach(fname => {
+      const img = document.createElement("img");
+      img.src = "pictures/" + fname;
+      img.alt = fname;
+
+      const sizeMatch = fname.match(/_(\d+)x(\d+)\.(?:png|jpe?g|webp)$/i);
+      if(sizeMatch){
+        img.width  = parseInt(sizeMatch[1],10);
+        img.height = parseInt(sizeMatch[2],10);
+      } else {
+        img.style.maxHeight = "360px";
+        img.style.maxWidth  = "100%";
+      }
+
+      img.className = "border rounded";
+      imgRow.appendChild(img);
+    });
+    wrapper.appendChild(imgRow);
+  }
+
+  return wrapper;
+}
+
+/* ---------- helpers for multi-input attributes ---------- */
+function parseAttributePattern(attrStr){
+  log('Parsing attribute pattern:', attrStr);
+  
+  // First, split by whitespace
+  const rawTokens = attrStr.trim().split(/\s+/);
+  const result = [];
+  
+  rawTokens.forEach(tok => {
+    // Check if this token contains multiple box types (e.g., "int_box:int_box" or "int_box/int_box")
+    // We need to split these into separate tokens while preserving the separator
+    const boxPattern = /(int_box|float_box|alphanum_box)/gi;
+    const matches = tok.match(boxPattern);
+    
+    if(matches && matches.length > 1){
+      // Token contains multiple input boxes - need to split it
+      // Find all positions of box types and extract separators
+      let lastIndex = 0;
+      let tempTok = tok;
+      const parts = [];
+      
+      // Replace box types with placeholders to find separators
+      const boxTypes = ['int_box', 'float_box', 'alphanum_box'];
+      let workingStr = tok.toLowerCase();
+      
+      // Split by box type keywords while keeping separators
+      const splitRegex = /(int_box|float_box|alphanum_box)/gi;
+      const splitParts = tok.split(splitRegex);
+      
+      splitParts.forEach((part, idx) => {
+        if(!part) return; // Skip empty parts
+        
+        const lower = part.toLowerCase();
+        if(lower === "int_box"){
+          result.push({ type: "int_box" });
+        } else if(lower === "float_box"){
+          result.push({ type: "float_box" });
+        } else if(lower === "alphanum_box"){
+          result.push({ type: "alphanum_box" });
+        } else if(part.trim()){
+          // This is a separator like ":" or "/"
+          result.push({ type: "text", value: part });
+        }
+      });
+    } else {
+      // Single token - process normally
+      const lower = tok.toLowerCase();
+      if(lower === "int_box"){
+        result.push({ type: "int_box" });
+      } else if(lower === "float_box"){
+        result.push({ type: "float_box" });
+      } else if(lower === "alphanum_box"){
+        result.push({ type: "alphanum_box" });
+      } else {
+        result.push({ type: "text", value: tok });
+      }
+    }
+  });
+  
+  log('Parsed pattern result:', result);
+  return result;
+}
+
+function groupHasAnyValue(group){
+  if(!group || !Array.isArray(group.pattern) || !Array.isArray(group.values)) return false;
+  for(let i=0;i<group.pattern.length;i++){
+    const t = group.pattern[i];
+    if(t.type === "int_box" || t.type === "float_box" || t.type === "alphanum_box"){
+      const v = group.values[i];
+      if(v && v.toString().trim() !== ""){
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function renderGroupLabel(group){
+  if(!group || !Array.isArray(group.pattern)) return "";
+  const vals = Array.isArray(group.values) ? group.values : [];
+
+  // Show group only if any box has non-empty value
+  if(!groupHasAnyValue(group)) return "";
+
+  const txt = group.pattern.map((t,idx)=>{
+    if(t.type === "text") return t.value;
+    if(t.type === "int_box" || t.type === "float_box" || t.type === "alphanum_box"){
+      return vals[idx] || "";
+    }
+    return "";
+  }).join(" ");
+
+  return txt.replace(/\s+/g," ").trim();
+}
+
+/* ---------- constants ---------- */
+const SUBLOCATIONS = {
+  'Esophagus':['Cricopharynx','Upper','Middle','Lower','Whole esophagus','Anastomosis'],
+  'GE Junction':['Z-line','Hiatal hernia','Diaphragmatic pinch'],
+  'Stomach':['Cardia','Fundus','Body','Incisura/angulus','Antrum','Prepyloric region','Pylorus','Whole stomach','Anastomosis','Hiatal hernia','Diaphragma orifice','Greater curve','Lesser curve','Anterior wall','Posterior wall'],
+  'Duodenum':['Duodenal bulb(D1)','D1-D2 junction','D2','D3','D4','Upper duodenal knee/ superior duodenal angulus','Ampullary region','Major papilla','Minor papilla','Lower duodenal knee/ inferior duodenal angulus','Anastomosis','Proximal','Distal']
+};
+
+let DISEASES = {};
+let report = {};
+let active = null;
+let selectedMainLoc = 'Esophagus';
+
+/* ---------- Build DISEASES model from CSV ---------- */
+function buildFromCSV(rows){
+  log('Building DISEASES model from', rows.length, 'rows');
+  DISEASES = {};
+  rows.forEach(r => {
+    const d = (r["Diagnosis"] || "").trim();
+    if(!d) return;
+
+    if(!DISEASES[d]){
+      DISEASES[d] = {
+        sections: {},
+        locations: {},
+        default_subloc: (r["Default_Sub_Location"] || "").trim()
+      };
+    }
+
+    ["Esophagus","GE Junction","Stomach","Duodenum"].forEach(loc => {
+      if(isX(r[loc])) DISEASES[d].locations[loc] = true;
+    });
+
+    const sec = (r["Section"] || "General").trim();
+    const sub = (r["Subsection"] || "").trim();
+    const secHint = (r["Section_Hint"] || "").trim();
+    const subHint = (r["Subsection_Hint"] || "").trim();
+    const multi = isMultiFlag(r["Multi_Attribute"]);
+    const defaultAttr = (r["Default_Attr"] || "").trim();
+
+    if(!DISEASES[d].sections[sec]){
+      DISEASES[d].sections[sec] = {
+        rows: [],
+        subsections: {},
+        multi: false,
+        hint: secHint || "",
+        default_attrs: []
+      };
+    } else if(secHint && !DISEASES[d].sections[sec].hint){
+      DISEASES[d].sections[sec].hint = secHint;
+    }
+
+    const secDef = DISEASES[d].sections[sec];
+
+    if(!sub){
+      secDef.rows.push(r);
+      if(multi) secDef.multi = true;
+      // Store default attribute for section level
+      if(defaultAttr && !secDef.default_attrs.includes(defaultAttr)){
+        secDef.default_attrs.push(defaultAttr);
+      }
+    } else {
+      if(!secDef.subsections[sub]){
+        secDef.subsections[sub] = {
+          rows: [],
+          multi: false,
+          hint: subHint || "",
+          default_attrs: []
+        };
+      } else if(subHint && !secDef.subsections[sub].hint){
+        secDef.subsections[sub].hint = subHint;
+      }
+      secDef.subsections[sub].rows.push(r);
+      if(multi) secDef.subsections[sub].multi = true;
+      // Store default attribute for subsection level
+      if(defaultAttr && !secDef.subsections[sub].default_attrs.includes(defaultAttr)){
+        secDef.subsections[sub].default_attrs.push(defaultAttr);
+      }
+    }
+  });
+  log('DISEASES model built with', Object.keys(DISEASES).length, 'diseases');
+}
+
+/* ---------- Left columns (diseases) ---------- */
+function populateColumns(){
+  ["col-esophagus","col-gejunction","col-stomach","col-duodenum"].forEach(id => {
+    document.getElementById(id).innerHTML = "";
+  });
+
+  Object.keys(DISEASES).forEach(name => {
+    const def = DISEASES[name];
+    Object.keys(def.locations).forEach(loc => {
+      const colId =
+        loc === "Esophagus" ? "col-esophagus" :
+        loc === "GE Junction" ? "col-gejunction" :
+        loc === "Stomach" ? "col-stomach" : "col-duodenum";
+
+      const btn = document.createElement("button");
+      btn.className = "left-disease";
+      btn.textContent = name;
+      btn.dataset.loc = loc;
+      btn.dataset.disease = name;
+
+      btn.onclick = () => {
+        selectedMainLoc = loc;
+        addOrOpenDisease(loc, name);
+        refreshLeftHighlights();
+      };
+
+      document.getElementById(colId).appendChild(btn);
+    });
+  });
+
+  refreshLeftHighlights();
+}
+
+function refreshLeftHighlights(){
+  document.querySelectorAll(".left-disease").forEach(btn => {
+    const loc = btn.dataset.loc;
+    const dn  = btn.dataset.disease;
+    const inReport = !!(report[loc] && report[loc].diseases && report[loc].diseases[dn]);
+    const isActive = !!(active && active.loc === loc && active.disease === dn);
+    btn.classList.toggle("selected", inReport || isActive);
+  });
+}
+
+/* ---------- Sub-location chips (multi-select) ---------- */
+function renderSubLocChips(){
+  const el = document.getElementById("subloc-chips");
+  el.innerHTML = "";
+
+  const options = SUBLOCATIONS[selectedMainLoc] || [];
+  let current = [];
+
+  if(active && report[active.loc] && report[active.loc].diseases[active.disease]){
+    const d = report[active.loc].diseases[active.disease];
+    if(Array.isArray(d.sublocations)) current = d.sublocations;
+  }
+
+  options.forEach(s => {
+    const chip = document.createElement("button");
+    chip.className = "pill";
+    chip.textContent = s;
+
+    if(current.includes(s)) chip.classList.add("pill-selected");
+
+    chip.onclick = () => {
+      if(!active || !report[active.loc] || !report[active.loc].diseases[active.disease]) return;
+      const disease = report[active.loc].diseases[active.disease];
+      if(!Array.isArray(disease.sublocations)) disease.sublocations = [];
+
+      const idx = disease.sublocations.indexOf(s);
+      if(idx >= 0){
+        disease.sublocations.splice(idx,1);
+        chip.classList.remove("pill-selected");
+      } else {
+        disease.sublocations.push(s);
+        chip.classList.add("pill-selected");
+      }
+
+      updateDetailsSubtitle();
+      renderReport();
+      refreshLeftHighlights();
+    };
+
+    el.appendChild(chip);
+  });
+}
+
+function updateDetailsSubtitle(){
+  const el = document.getElementById("detailsSubTitle");
+  if(!active || !report[active.loc] || !report[active.loc].diseases[active.disease]){
+    el.textContent = "";
+    return;
+  }
+  const d = report[active.loc].diseases[active.disease];
+  const subs = Array.isArray(d.sublocations) ? d.sublocations : [];
+  el.textContent = "Sub-Locations: " + (subs.length ? subs.join(", ") : "—");
+}
+
+/* ---------- disease add/open ---------- */
+function addOrOpenDisease(loc, disease){
+  log('Adding/opening disease:', disease, 'at location:', loc);
+  if(!report[loc]) report[loc] = { diseases: {} };
+  
+  const isNewDisease = !report[loc].diseases[disease];
+  
+  if(isNewDisease){
+    report[loc].diseases[disease] = {
+      sections: {},
+      comments: "",
+      sublocations: []
+    };
+    const def = DISEASES[disease] && DISEASES[disease].default_subloc;
+    if(def){
+      report[loc].diseases[disease].sublocations = [def];
+      log('Applied default sub-location:', def);
+    }
+    
+    // Apply default attributes for all sections and subsections
+    applyDefaultAttributes(disease, report[loc].diseases[disease]);
+  }
+  openDetails(loc, disease);
+  renderReport();
+  refreshLeftHighlights();
+}
+
+/* ---------- Apply default attributes to a newly added disease ---------- */
+function applyDefaultAttributes(diseaseName, diseaseReport){
+  const diseaseDef = DISEASES[diseaseName];
+  if(!diseaseDef || !diseaseDef.sections) return;
+  
+  log('Applying default attributes for:', diseaseName);
+  
+  Object.keys(diseaseDef.sections).forEach(secName => {
+    const secDef = diseaseDef.sections[secName];
+    
+    // Apply section-level defaults
+    if(secDef.default_attrs && secDef.default_attrs.length > 0){
+      if(!diseaseReport.sections[secName]){
+        diseaseReport.sections[secName] = { attrs: {}, inputs: [], subsections: {} };
+      }
+      if(!diseaseReport.sections[secName].attrs){
+        diseaseReport.sections[secName].attrs = {};
+      }
+      secDef.default_attrs.forEach(attr => {
+        diseaseReport.sections[secName].attrs[attr] = true;
+        log('Applied default section attr:', secName, '->', attr);
+      });
+    }
+    
+    // Apply subsection-level defaults
+    Object.keys(secDef.subsections || {}).forEach(subName => {
+      const subDef = secDef.subsections[subName];
+      if(subDef.default_attrs && subDef.default_attrs.length > 0){
+        if(!diseaseReport.sections[secName]){
+          diseaseReport.sections[secName] = { attrs: {}, inputs: [], subsections: {} };
+        }
+        if(!diseaseReport.sections[secName].subsections[subName]){
+          diseaseReport.sections[secName].subsections[subName] = { attrs: {}, inputs: [] };
+        }
+        if(!diseaseReport.sections[secName].subsections[subName].attrs){
+          diseaseReport.sections[secName].subsections[subName].attrs = {};
+        }
+        subDef.default_attrs.forEach(attr => {
+          diseaseReport.sections[secName].subsections[subName].attrs[attr] = true;
+          log('Applied default subsection attr:', secName, '->', subName, '->', attr);
+        });
+      }
+    });
+  });
+}
+
+function openDetails(loc, disease){
+  if(!report[loc] || !report[loc].diseases[disease]) return;
+  active = { loc, disease };
+  selectedMainLoc = loc;
+
+  document.getElementById("detailsCard").classList.remove("hidden");
+  document.getElementById("detailsTitle").textContent = disease;
+
+  renderSubLocChips();
+  updateDetailsSubtitle();
+  renderDetailsSections(disease);
+
+  // Load disease-specific frame data
+  const diseaseData = report[loc].diseases[disease];
+  document.getElementById("diseaseStartFrame").value = diseaseData.startFrame || "";
+  document.getElementById("diseaseEndFrame").value = diseaseData.endFrame || "";
+  document.getElementById("diseaseSegmentationFrame").value = diseaseData.segmentationFrame || "";
+  updateDiseaseFrameCalculations();
+
+  document.getElementById("diseaseComments").value =
+    report[loc].diseases[disease].comments || "";
+}
+
+// Calculate and update disease-specific frame count and duration
+function updateDiseaseFrameCalculations() {
+  const startFrame = parseInt(document.getElementById('diseaseStartFrame').value, 10) || 0;
+  const endFrame = parseInt(document.getElementById('diseaseEndFrame').value, 10) || 0;
+  
+  let frameCount = 0;
+  let duration = 0;
+  
+  if (endFrame >= startFrame && (startFrame > 0 || endFrame > 0)) {
+    frameCount = endFrame - startFrame + 1;
+    duration = frameCount / FPS;
+  }
+  
+  document.getElementById('diseaseFrameCount').textContent = frameCount;
+  document.getElementById('diseaseDurationSec').textContent = duration.toFixed(2);
+}
+
+// Save disease frame data when inputs change
+function saveDiseaseFrameData() {
+  if (!active) return;
+  const diseaseData = report[active.loc].diseases[active.disease];
+  
+  const startFrame = document.getElementById('diseaseStartFrame').value;
+  const endFrame = document.getElementById('diseaseEndFrame').value;
+  const segFrame = document.getElementById('diseaseSegmentationFrame').value;
+  
+  diseaseData.startFrame = startFrame ? parseInt(startFrame, 10) : null;
+  diseaseData.endFrame = endFrame ? parseInt(endFrame, 10) : null;
+  diseaseData.segmentationFrame = segFrame ? parseInt(segFrame, 10) : null;
+  
+  updateDiseaseFrameCalculations();
+  renderReport();
+}
+
+// Add event listeners for disease frame inputs
+document.getElementById('diseaseStartFrame').addEventListener('input', saveDiseaseFrameData);
+document.getElementById('diseaseEndFrame').addEventListener('input', saveDiseaseFrameData);
+document.getElementById('diseaseSegmentationFrame').addEventListener('input', saveDiseaseFrameData);
+
+/* ---------- conditional logic ---------- */
+function evaluateSingleCondition(cond){
+  if(!cond || !cond.trim()) return true;
+  const s = cond.trim();
+
+  const locMatch = s.match(/^Location\(\s*Main\s*=\s*(.+?)\s*\)$/i);
+  if(locMatch) return selectedMainLoc === locMatch[1];
+
+  const secMatch = s.match(/^Section\(\s*([^=]+?)\s*=\s*(.+?)\s*\)$/i);
+  if(secMatch){
+    if(!active) return false;
+    const m = report[active.loc] && report[active.loc].diseases[active.disease];
+    if(!m) return false;
+    const secName = secMatch[1].trim();
+    const attrValue = secMatch[2].trim();
+    const sec = m.sections[secName];
+    if(!sec) return false;
+    
+    // Check section-level attrs first
+    if(sec.attrs && sec.attrs[attrValue]){
+      log('Section condition matched in section attrs:', secName, '=', attrValue);
+      return true;
+    }
+    
+    // Also check all subsection attrs (for cases where the attribute is in a subsection)
+    if(sec.subsections){
+      for(const subName of Object.keys(sec.subsections)){
+        const sub = sec.subsections[subName];
+        if(sub.attrs && sub.attrs[attrValue]){
+          log('Section condition matched in subsection attrs:', secName, '->', subName, '=', attrValue);
+          return true;
+        }
+      }
+    }
+    
+    return false;
+  }
+
+  const subMatch = s.match(/^Subsection\(\s*([^=]+?)\s*=\s*(.+?)\s*\)$/i);
+  if(subMatch){
+    if(!active) return false;
+    const m = report[active.loc] && report[active.loc].diseases[active.disease];
+    if(!m) return false;
+    const subName = subMatch[1].trim();
+    const val = subMatch[2].trim();
+    return Object.values(m.sections || {}).some(sec =>
+      sec.subsections && sec.subsections[subName] &&
+      sec.subsections[subName].attrs &&
+      sec.subsections[subName].attrs[val]
+    );
+  }
+  
+  log('Condition not recognized:', s);
+  return false;
+}
+
+function evaluateConditional(cond){
+  if(!cond || !cond.trim()) return true;
+  const s = cond.trim();
+  
+  // Check for OR conditions (split by " OR " - case insensitive)
+  if(/\sOR\s/i.test(s)){
+    const orParts = s.split(/\sOR\s/i);
+    log('Evaluating OR condition with', orParts.length, 'parts');
+    return orParts.some(part => evaluateConditional(part.trim()));
+  }
+  
+  // Check for AND conditions (split by " AND " - case insensitive)
+  if(/\sAND\s/i.test(s)){
+    const andParts = s.split(/\sAND\s/i);
+    log('Evaluating AND condition with', andParts.length, 'parts');
+    return andParts.every(part => evaluateConditional(part.trim()));
+  }
+  
+  // Single condition - evaluate directly
+  return evaluateSingleCondition(s);
+}
+
+/* ---------- details pane ---------- */
+function renderDetailsSections(diseaseName){
+  const container = document.getElementById("detailsSections");
+  container.innerHTML = "";
+  const defs = (DISEASES[diseaseName] && DISEASES[diseaseName].sections) || {};
+
+  Object.keys(defs).forEach(secName => {
+    const secDef = defs[secName];
+
+    const box = document.createElement("div");
+    box.className = "p-3 border rounded";
+
+    const title = document.createElement("div");
+    title.className = "font-semibold mb-1";
+    const secMeta = secDef.multi ? "Multi-select" : "Single selection only";
+    title.innerHTML = `${secName} <span class="italic text-xs text-gray-500">(${secMeta})</span>`;
+    box.appendChild(title);
+
+    if(secDef.hint){
+      box.appendChild(createHintElement(secDef.hint));
+    }
+
+    // Track if section has any visible content
+    let sectionHasVisibleContent = false;
+
+    // Render section-level rows (those without subsection)
+    (secDef.rows || [])
+      .filter(r => !(r["Subsection"] || "").trim())
+      .forEach(r => {
+        if(!evaluateConditional(r["Conditional_on"])) return;
+        box.appendChild(renderRow(r, secName, null));
+        sectionHasVisibleContent = true;
+      });
+
+    // Render subsections
+    Object.keys(secDef.subsections || {}).forEach(subName => {
+      const subDef = secDef.subsections[subName];
+
+      // First check if any rows in this subsection pass their conditionals
+      const visibleRows = (subDef.rows || []).filter(r => evaluateConditional(r["Conditional_on"]));
+      
+      // If no rows are visible, don't render this subsection at all
+      if (visibleRows.length === 0) return;
+
+      const subBox = document.createElement("div");
+      subBox.className = "mt-3 p-2 border rounded bg-gray-50";
+
+      const st = document.createElement("div");
+      st.className = "font-semibold text-sm mb-1";
+      const subMeta = subDef.multi ? "Multi-select" : "Single selection only";
+      st.innerHTML = `${subName} <span class="italic text-xs text-gray-500">(${subMeta})</span>`;
+      subBox.appendChild(st);
+
+      if(subDef.hint){
+        subBox.appendChild(createHintElement(subDef.hint));
+      }
+
+      visibleRows.forEach(r => {
+        subBox.appendChild(renderRow(r, secName, subName));
+      });
+
+      box.appendChild(subBox);
+      sectionHasVisibleContent = true;
+    });
+
+    // Only add the section box if it has any visible content (rows or subsections)
+    if (sectionHasVisibleContent) {
+      container.appendChild(box);
+    }
+  });
+
+  document.getElementById("diseaseComments").oninput = e => {
+    if(!active) return;
+    report[active.loc].diseases[active.disease].comments = e.target.value;
+    renderReport();
+  };
+}
+
+/* ---------- row rendering (supports multi input boxes) ---------- */
+function renderRow(row, secName, subName){
+  const wrap = document.createElement("div");
+  wrap.className = "mt-2";
+
+  const attrs = Object.keys(row)
+    .filter(k => /^Attribute/i.test(k))
+    .map(k => row[k])
+    .filter(v => v && v.trim());
+
+  const multi = isMultiFlag(row["Multi_Attribute"]);
+
+  attrs.forEach(attrStr => {
+    if(/^Range\(/i.test(attrStr)){
+      (expandRangeToken(attrStr) || []).forEach(x => {
+        wrap.appendChild(makePill(x, secName, subName, multi));
+      });
+      return;
+    }
+
+    if(/int_box|float_box|alphanum_box/i.test(attrStr)){
+      wrap.appendChild(renderInputAttribute(attrStr, secName, subName));
+    } else {
+      wrap.appendChild(makePill(attrStr, secName, subName, multi));
+    }
+  });
+
+  return wrap;
+}
+
+/* ---------- multi-input attribute renderer (lazy group, skip empty) ---------- */
+function renderInputAttribute(attrStr, secName, subName){
+  const wrap = document.createElement("div");
+  wrap.className = "flex items-center flex-wrap gap-2 mt-2";
+
+  const pattern = parseAttributePattern(attrStr);
+
+  if(!active) return wrap;
+  const model = report[active.loc].diseases[active.disease];
+
+  if(!model.sections[secName])
+    model.sections[secName] = { attrs:{}, inputs:[], subsections:{} };
+
+  let inputsRef;
+  if(subName){
+    if(!model.sections[secName].subsections[subName])
+      model.sections[secName].subsections[subName] = { attrs:{}, inputs:[] };
+    inputsRef = model.sections[secName].subsections[subName].inputs;
+  } else {
+    inputsRef = model.sections[secName].inputs;
+  }
+  if(!Array.isArray(inputsRef)){
+    inputsRef = [];
+    if(subName){
+      model.sections[secName].subsections[subName].inputs = inputsRef;
+    } else {
+      model.sections[secName].inputs = inputsRef;
+    }
+  }
+
+  // Try to find existing group for this attribute (same rawKey)
+  let group = inputsRef.find(i => i.type === "group" && i.rawKey === attrStr) || null;
+
+  // Align pattern & values if group exists
+  if(group){
+    group.pattern = pattern;
+    if(!Array.isArray(group.values)) group.values = [];
+    if(group.values.length < pattern.length){
+      group.values = group.values.concat(
+        new Array(pattern.length - group.values.length).fill("")
+      );
+    } else if(group.values.length > pattern.length){
+      group.values = group.values.slice(0, pattern.length);
+    }
+  }
+
+  pattern.forEach((tok, idx) => {
+    if(tok.type === "text"){
+      const span = document.createElement("span");
+      span.className = "text-sm";
+      span.textContent = tok.value;
+      wrap.appendChild(span);
+    } else {
+      const input = document.createElement("input");
+      
+      // Set input type based on token type
+      if(tok.type === "int_box"){
+        input.type = "number";
+        input.step = "1";
+        input.min = "0";
+        input.className = "border rounded p-1 w-20"; // Narrow width for integers
+      } else if(tok.type === "float_box"){
+        input.type = "number";
+        input.step = "0.1";
+        input.min = "0";
+        input.className = "border rounded p-1 w-24"; // Medium width for floats
+      } else if(tok.type === "alphanum_box"){
+        input.type = "text";
+        input.className = "border rounded p-1 w-48"; // Wider for alphanumeric
+      }
+
+      // Pre-fill from existing group if present
+      if(group && Array.isArray(group.values)){
+        input.value = group.values[idx] || "";
+      }
+
+      input.oninput = () => {
+        const val = input.value.trim();
+
+        // Ensure up-to-date model refs inside handler
+        let currentModel = report[active.loc].diseases[active.disease];
+        if(!currentModel.sections[secName])
+          currentModel.sections[secName] = { attrs:{}, inputs:[], subsections:{} };
+
+        let currentInputs;
+        if(subName){
+          if(!currentModel.sections[secName].subsections[subName])
+            currentModel.sections[secName].subsections[subName] = { attrs:{}, inputs:[] };
+          currentInputs = currentModel.sections[secName].subsections[subName].inputs;
+        } else {
+          currentInputs = currentModel.sections[secName].inputs;
+        }
+        if(!Array.isArray(currentInputs)){
+          currentInputs = [];
+          if(subName){
+            currentModel.sections[secName].subsections[subName].inputs = currentInputs;
+          } else {
+            currentModel.sections[secName].inputs = currentInputs;
+          }
+        }
+
+        // Lazily create group only when there is some non-empty value
+        if(!group){
+          group = {
+            type: "group",
+            rawKey: attrStr,
+            pattern: pattern,
+            values: new Array(pattern.length).fill("")
+          };
+          currentInputs.push(group);
+        }
+
+        group.values[idx] = val;
+
+        // If no values at all, remove group
+        if(!groupHasAnyValue(group)){
+          const pos = currentInputs.indexOf(group);
+          if(pos >= 0){
+            currentInputs.splice(pos, 1);
+          }
+          group = null;
+        }
+
+        renderReport();
+      };
+
+      wrap.appendChild(input);
+    }
+  });
+
+  return wrap;
+}
+
+/* ---------- attribute pill ---------- */
+function makePill(attr, secName, subName, multi){
+  const btn = document.createElement("button");
+  btn.className = "attr-pill";
+  btn.textContent = attr;
+
+  const m = active && report[active.loc] && report[active.loc].diseases[active.disease];
+  if(m){
+    const ref = subName
+      ? m.sections[secName]?.subsections?.[subName]?.attrs
+      : m.sections[secName]?.attrs;
+    if(ref && ref[attr]) btn.classList.add("selected");
+  }
+
+  btn.onclick = () => {
+    if(!active) return;
+    const model = report[active.loc].diseases[active.disease];
+    if(!model.sections[secName])
+      model.sections[secName] = { attrs:{}, inputs:[], subsections:{} };
+
+    if(subName){
+      if(!model.sections[secName].subsections[subName])
+        model.sections[secName].subsections[subName] = { attrs:{}, inputs:[] };
+      const t = model.sections[secName].subsections[subName].attrs;
+      if(multi){
+        // Multi-select: toggle the attribute
+        if(t[attr]) delete t[attr]; else t[attr] = true;
+      } else {
+        // Single-select: if already selected, deselect; otherwise select this one only
+        if(t[attr]){
+          delete t[attr]; // Toggle off if already selected
+        } else {
+          Object.keys(t).forEach(k => delete t[k]); // Clear others
+          t[attr] = true;
+        }
+      }
+    } else {
+      const t = model.sections[secName].attrs;
+      if(multi){
+        // Multi-select: toggle the attribute
+        if(t[attr]) delete t[attr]; else t[attr] = true;
+      } else {
+        // Single-select: if already selected, deselect; otherwise select this one only
+        if(t[attr]){
+          delete t[attr]; // Toggle off if already selected
+        } else {
+          Object.keys(t).forEach(k => delete t[k]); // Clear others
+          t[attr] = true;
+        }
+      }
+    }
+
+    renderDetailsSections(active.disease);
+    renderReport();
+    refreshLeftHighlights();
+  };
+
+  return btn;
+}
+
+/* ---------- right-hand report ---------- */
+function renderReport(){
+  const rc = document.getElementById("reportContent");
+  rc.innerHTML = "";
+
+  Object.keys(report).forEach(loc => {
+    const blk = document.createElement("div");
+    blk.className = "border rounded bg-gray-50 p-2";
+
+    const h = document.createElement("div");
+    h.className = "text-blue-700 font-semibold mb-2";
+    h.textContent = loc;
+    blk.appendChild(h);
+
+    Object.keys(report[loc].diseases).forEach(dn => {
+      const e = report[loc].diseases[dn];
+
+      const card = document.createElement("div");
+      card.className = "bg-white p-3 rounded border relative";
+
+      const close = document.createElement("button");
+      close.className = "absolute right-2 top-2 text-red-500";
+      close.textContent = "x";
+      close.onclick = () => {
+        delete report[loc].diseases[dn];
+        if(!Object.keys(report[loc].diseases).length) delete report[loc];
+        if(active && active.loc === loc && active.disease === dn){
+          active = null;
+          document.getElementById("detailsCard").classList.add("hidden");
+        }
+        renderReport();
+        populateColumns();
+        renderSubLocChips();
+      };
+      card.appendChild(close);
+
+      const title = document.createElement("a");
+      title.href = "#";
+      title.className = "font-semibold text-sm";
+      title.textContent = dn;
+      title.onclick = e2 => {
+        e2.preventDefault();
+        openDetails(loc, dn);
+        populateColumns();
+      };
+      card.appendChild(title);
+
+      const meta = document.createElement("div");
+      meta.className = "text-xs text-gray-600 mt-1";
+      const subs = Array.isArray(e.sublocations) ? e.sublocations : [];
+      meta.innerHTML = "<strong>Sub-Locations:</strong> " + (subs.length ? subs.join(", ") : "—");
+      card.appendChild(meta);
+
+      // Show disease frame info if available
+      if (e.startFrame !== null && e.startFrame !== undefined && 
+          e.endFrame !== null && e.endFrame !== undefined) {
+        const frameMeta = document.createElement("div");
+        frameMeta.className = "text-xs text-gray-600 mt-1";
+        const frameCount = e.endFrame - e.startFrame + 1;
+        const duration = (frameCount / FPS).toFixed(2);
+        let frameText = `<strong>Frames:</strong> ${e.startFrame} - ${e.endFrame} (${frameCount} frames, ${duration} sec)`;
+        if (e.segmentationFrame !== null && e.segmentationFrame !== undefined) {
+          frameText += ` | <strong>Seg:</strong> ${e.segmentationFrame}`;
+        }
+        frameMeta.innerHTML = frameText;
+        card.appendChild(frameMeta);
+      }
+
+      const ul = document.createElement("ul");
+      ul.className = "list-disc pl-5 mt-2 text-xs text-gray-700";
+
+      let any = false;
+      Object.keys(e.sections || {}).forEach(sn => {
+        const s = e.sections[sn];
+        const hasAttrs = s.attrs && Object.keys(s.attrs).length > 0;
+        
+        // Check if inputs have actual filled values (not just empty groups)
+        const hasFilledInputs = (s.inputs || []).some(i => {
+          if(i.type === "group"){
+            return groupHasAnyValue(i);
+          } else {
+            return (i.label || i.value || "").trim() !== "";
+          }
+        });
+        
+        // Check if subsections have actual content
+        const hasFilledSubs = Object.keys(s.subsections || {}).some(subn => {
+          const sub = s.subsections[subn];
+          const subHasAttrs = sub.attrs && Object.keys(sub.attrs).length > 0;
+          const subHasFilledInputs = (sub.inputs || []).some(i => {
+            if(i.type === "group"){
+              return groupHasAnyValue(i);
+            } else {
+              return (i.label || i.value || "").trim() !== "";
+            }
+          });
+          return subHasAttrs || subHasFilledInputs;
+        });
+        
+        if(!(hasAttrs || hasFilledInputs || hasFilledSubs)) return;
+
+        const sli = document.createElement("li");
+        sli.textContent = sn;
+
+        const subul = document.createElement("ul");
+        subul.className = "list-disc pl-6";
+
+        // plain attribute pills
+        Object.keys(s.attrs || {}).forEach(a => {
+          const li = document.createElement("li");
+          li.textContent = a;
+          subul.appendChild(li);
+        });
+
+        // section inputs - only show if they have values
+        (s.inputs || []).forEach(i => {
+          let txt = "";
+          if(i.type === "group"){
+            txt = renderGroupLabel(i);
+          } else {
+            txt = (i.label || i.value || "").trim();
+          }
+          if(!txt) return;
+          const li = document.createElement("li");
+          li.textContent = txt;
+          subul.appendChild(li);
+        });
+
+        // subsections - only show if they have actual content
+        Object.keys(s.subsections || {}).forEach(subn => {
+          const sub = s.subsections[subn];
+          
+          // Check if this subsection has any actual content
+          const subHasAttrs = sub.attrs && Object.keys(sub.attrs).length > 0;
+          const subHasFilledInputs = (sub.inputs || []).some(i => {
+            if(i.type === "group"){
+              return groupHasAnyValue(i);
+            } else {
+              return (i.label || i.value || "").trim() !== "";
+            }
+          });
+          
+          if(!subHasAttrs && !subHasFilledInputs) return; // Skip empty subsections
+          
+          const subli = document.createElement("li");
+          subli.textContent = subn;
+
+          const ssubul = document.createElement("ul");
+          ssubul.className = "list-disc pl-6";
+
+          Object.keys(sub.attrs || {}).forEach(a => {
+            const li = document.createElement("li");
+            li.textContent = a;
+            ssubul.appendChild(li);
+          });
+
+          (sub.inputs || []).forEach(i => {
+            let txt = "";
+            if(i.type === "group"){
+              txt = renderGroupLabel(i);
+            } else {
+              txt = (i.label || i.value || "").trim();
+            }
+            if(!txt) return;
+            const li = document.createElement("li");
+            li.textContent = txt;
+            ssubul.appendChild(li);
+          });
+
+          if(ssubul.children.length) subli.appendChild(ssubul);
+          subul.appendChild(subli);
+        });
+
+        if(subul.children.length){
+          sli.appendChild(subul);
+          ul.appendChild(sli);
+          any = true;
+        }
+      });
+
+      if(e.comments){
+        const cli = document.createElement("li");
+        cli.textContent = "Comments: " + e.comments;
+        ul.appendChild(cli);
+        any = true;
+      }
+
+      if(any) card.appendChild(ul);
+      blk.appendChild(card);
+    });
+
+    rc.appendChild(blk);
+  });
+
+  refreshLeftHighlights();
+}
+
+/* ---------- clear, save, load JSON ---------- */
+document.getElementById("clearReport").onclick = () => {
+  if(!confirm("Clear entire report?")) return;
+  report = {};
+  active = null;
+  document.getElementById("detailsCard").classList.add("hidden");
+  document.getElementById("startFrame").value = "";
+  document.getElementById("endFrame").value = "";
+  document.getElementById("segmentationFrame").value = "";
+  document.getElementById("overallRemarks").value = "";
+  updateFrameCalculations();
+  renderReport();
+  populateColumns();
+  renderSubLocChips();
+  document.getElementById("csvNote").textContent = "Report cleared.";
+};
+
+/* ---------- Retrospective Video Data ---------- */
+let retroData = {
+  uhidList: [],
+  videosByUhid: {},
+  jsonCountByUhid: {},
+  uhidFolderHandles: {},
+  rootFolderHandle: null
+};
+
+// Video file extensions (case-insensitive)
+const VIDEO_EXTENSIONS = ['.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv', '.webm'];
+const FPS = 25; // Frames per second for duration calculation
+
+function isVideoFile(filename) {
+  const lowerName = filename.toLowerCase();
+  return VIDEO_EXTENSIONS.some(ext => lowerName.endsWith(ext));
+}
+
+function isJsonFile(filename) {
+  return filename.toLowerCase().endsWith('.json');
+}
+
+// Calculate and update frame count and duration
+function updateFrameCalculations() {
+  const startFrame = parseInt(document.getElementById('startFrame').value, 10) || 0;
+  const endFrame = parseInt(document.getElementById('endFrame').value, 10) || 0;
+  
+  let frameCount = 0;
+  let duration = 0;
+  
+  if (endFrame >= startFrame && (startFrame > 0 || endFrame > 0)) {
+    frameCount = endFrame - startFrame + 1;
+    duration = frameCount / FPS;
+  }
+  
+  document.getElementById('frameCount').textContent = frameCount;
+  document.getElementById('durationSec').textContent = duration.toFixed(2);
+}
+
+// Clear frame inputs and calculations
+function clearFrameInputs() {
+  document.getElementById('startFrame').value = '';
+  document.getElementById('endFrame').value = '';
+  document.getElementById('segmentationFrame').value = '';
+  updateFrameCalculations();
+}
+
+// Add event listeners for frame input changes
+document.getElementById('startFrame').addEventListener('input', updateFrameCalculations);
+document.getElementById('endFrame').addEventListener('input', updateFrameCalculations);
+
+// Load folder from directory handle (reusable function)
+async function loadFolderFromHandle(dirHandle) {
+  retroData.rootFolderHandle = dirHandle;
+  retroData.uhidList = [];
+  retroData.videosByUhid = {};
+  retroData.jsonCountByUhid = {};
+  retroData.uhidFolderHandles = {};
+  
+  const uhidSelect = document.getElementById('uhidSelect');
+  uhidSelect.innerHTML = '<option value="">-- Select UHID --</option>';
+  
+  // Iterate through UHID folders
+  for await (const entry of dirHandle.values()) {
+    if (entry.kind === 'directory') {
+      const uhid = entry.name;
+      retroData.uhidList.push(uhid);
+      retroData.uhidFolderHandles[uhid] = entry;
+      retroData.videosByUhid[uhid] = [];
+      retroData.jsonCountByUhid[uhid] = 0;
+      
+      // Get video files and count JSON files in this UHID folder
+      for await (const fileEntry of entry.values()) {
+        if (fileEntry.kind === 'file') {
+          if (isVideoFile(fileEntry.name)) {
+            retroData.videosByUhid[uhid].push(fileEntry.name);
+          } else if (isJsonFile(fileEntry.name)) {
+            retroData.jsonCountByUhid[uhid]++;
+          }
+        }
+      }
+      
+      // Add UHID to dropdown with JSON count in parenthesis
+      const option = document.createElement('option');
+      option.value = uhid;
+      const jsonCount = retroData.jsonCountByUhid[uhid];
+      option.textContent = `${uhid} (${jsonCount})`;
+      uhidSelect.appendChild(option);
+    }
+  }
+  
+  // Sort UHIDs alphabetically
+  retroData.uhidList.sort();
+  
+  // Re-sort dropdown options
+  const options = Array.from(uhidSelect.options).slice(1); // Skip first "Select" option
+  options.sort((a, b) => a.value.localeCompare(b.value));
+  options.forEach(opt => uhidSelect.appendChild(opt));
+  
+  document.getElementById('csvNote').textContent = `Loaded ${retroData.uhidList.length} UHID folders from "${dirHandle.name}"`;
+  log('Loaded UHID folders:', retroData.uhidList.length);
+}
+
+// Update JSON count for a specific UHID in the dropdown
+function updateUhidJsonCount(uhid) {
+  if (!uhid || !retroData.jsonCountByUhid.hasOwnProperty(uhid)) return;
+  
+  retroData.jsonCountByUhid[uhid]++;
+  
+  const uhidSelect = document.getElementById('uhidSelect');
+  const option = Array.from(uhidSelect.options).find(opt => opt.value === uhid);
+  if (option) {
+    option.textContent = `${uhid} (${retroData.jsonCountByUhid[uhid]})`;
+  }
+}
+
+// Try to load default retro_videos folder on page load
+async function tryLoadDefaultRetroVideos() {
+  // Note: Due to browser security, we cannot auto-load a folder without user interaction
+  // But we can try to use a previously granted permission if available
+  log('Checking for default retro_videos folder...');
+  document.getElementById('csvNote').textContent = 'Click "Load Videos Folder" to select the retro_videos folder, or load a CSV file.';
+}
+
+// Load Videos Folder button handler
+document.getElementById('loadVideoFolder').addEventListener('click', async function() {
+  if (!('showDirectoryPicker' in window)) {
+    alert('Your browser does not support the File System Access API. Please use a modern browser like Chrome or Edge.');
+    return;
+  }
+  
+  try {
+    log('Opening folder picker for retro_videos...');
+    const dirHandle = await window.showDirectoryPicker({
+      mode: 'readwrite'
+    });
+    
+    await loadFolderFromHandle(dirHandle);
+    
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      log('Folder selection cancelled by user');
+    } else {
+      logError('Error loading videos folder:', err);
+      alert('Error loading folder: ' + err.message);
+    }
+  }
+});
+
+// Handle UHID selection change
+document.getElementById('uhidSelect').addEventListener('change', async function() {
+  const uhid = this.value;
+  const videoSelect = document.getElementById('videoSelect');
+  
+  // Clear video dropdown
+  videoSelect.innerHTML = '<option value="">-- Select Video --</option>';
+  
+  // Clear frame inputs when UHID changes
+  clearFrameInputs();
+  
+  // Clear the brown text (csvNote) when UHID changes
+  document.getElementById('csvNote').textContent = '';
+  
+  // Clear the report section and related data when UHID changes
+  report = {};
+  active = null;
+  document.getElementById("detailsCard").classList.add("hidden");
+  document.getElementById("overallRemarks").value = "";
+  renderReport();
+  populateColumns();
+  renderSubLocChips();
+  
+  if (!uhid) {
+    videoSelect.disabled = true;
+    return;
+  }
+  
+  // Populate videos for selected UHID
+  const videos = retroData.videosByUhid[uhid] || [];
+  videos.forEach(video => {
+    const option = document.createElement('option');
+    option.value = video;
+    option.textContent = video;
+    videoSelect.appendChild(option);
+  });
+  
+  videoSelect.disabled = videos.length === 0;
+  log('UHID selected:', uhid, 'Videos available:', videos.length);
+  
+  // Load the latest modified JSON from this UHID folder
+  await loadLatestJsonFromUhid(uhid);
+});
+
+// Load the latest modified JSON file from a UHID folder
+async function loadLatestJsonFromUhid(uhid) {
+  if (!retroData.uhidFolderHandles || !retroData.uhidFolderHandles[uhid]) {
+    log('No folder handle for UHID:', uhid);
+    return;
+  }
+  
+  try {
+    const folderHandle = retroData.uhidFolderHandles[uhid];
+    let latestFile = null;
+    let latestTime = 0;
+    
+    // Find the most recently modified JSON file
+    for await (const entry of folderHandle.values()) {
+      if (entry.kind === 'file' && entry.name.toLowerCase().endsWith('.json')) {
+        try {
+          const file = await entry.getFile();
+          if (file.lastModified > latestTime) {
+            latestTime = file.lastModified;
+            latestFile = file;
+          }
+        } catch (err) {
+          logWarn('Could not get file info for:', entry.name, err);
+        }
+      }
+    }
+    
+    if (latestFile) {
+      log('Loading latest JSON file:', latestFile.name);
+      const text = await latestFile.text();
+      loadJsonFromText(text, latestFile.name);
+    } else {
+      log('No JSON files found in UHID folder:', uhid);
+    }
+  } catch (err) {
+    logError('Error loading latest JSON from UHID folder:', err);
+  }
+}
+
+// Load JSON data from text content
+function loadJsonFromText(text, filename) {
+  try {
+    const parsedAll = JSON.parse(text);
+    if (typeof parsedAll !== "object" || parsedAll === null)
+      throw new Error("Invalid JSON structure");
+
+    // Handle retrospective metadata
+    if (parsedAll.__retroMeta) {
+      const retroMeta = parsedAll.__retroMeta;
+      log('Found retrospective metadata:', retroMeta);
+      
+      // Restore video selection (UHID is already selected)
+      if (retroMeta.video) {
+        const videoSelect = document.getElementById('videoSelect');
+        let videoOption = Array.from(videoSelect.options).find(opt => opt.value === retroMeta.video);
+        if (!videoOption) {
+          videoOption = document.createElement('option');
+          videoOption.value = retroMeta.video;
+          videoOption.textContent = retroMeta.video;
+          videoSelect.appendChild(videoOption);
+        }
+        videoSelect.value = retroMeta.video;
+        videoSelect.disabled = false;
+      }
+      
+      // Restore frame range
+      if (retroMeta.startFrame !== null && retroMeta.startFrame !== undefined) {
+        document.getElementById('startFrame').value = retroMeta.startFrame;
+      }
+      if (retroMeta.endFrame !== null && retroMeta.endFrame !== undefined) {
+        document.getElementById('endFrame').value = retroMeta.endFrame;
+      }
+      if (retroMeta.segmentationFrame !== null && retroMeta.segmentationFrame !== undefined) {
+        document.getElementById('segmentationFrame').value = retroMeta.segmentationFrame;
+      }
+      
+      updateFrameCalculations();
+    }
+
+    // Handle lastActive metadata
+    let lastActive = null;
+    if (parsedAll.__meta && parsedAll.__meta.lastActive) {
+      lastActive = parsedAll.__meta.lastActive;
+      log('Found lastActive in JSON:', lastActive);
+    }
+    
+    // Handle overall remarks
+    if (parsedAll.overallRemarks) {
+      document.getElementById('overallRemarks').value = parsedAll.overallRemarks;
+    }
+
+    // Get report data (handle both old and new format)
+    if (parsedAll.report) {
+      report = parsedAll.report;
+    } else {
+      const tempReport = {...parsedAll};
+      delete tempReport.__retroMeta;
+      delete tempReport.__meta;
+      delete tempReport.overallRemarks;
+      report = tempReport;
+    }
+
+    // Normalize sublocations
+    Object.keys(report).forEach(loc => {
+      const ds = report[loc].diseases || {};
+      Object.keys(ds).forEach(dn => {
+        const d = ds[dn];
+        if (Array.isArray(d.sublocations)) {
+        } else if (typeof d.sublocation === "string" && d.sublocation) {
+          d.sublocations = [d.sublocation];
+          delete d.sublocation;
+        } else {
+          d.sublocations = d.sublocations || [];
+        }
+      });
+    });
+
+    if (lastActive &&
+        report[lastActive.loc] &&
+        report[lastActive.loc].diseases &&
+        report[lastActive.loc].diseases[lastActive.disease]) {
+      active = { loc: lastActive.loc, disease: lastActive.disease };
+    } else {
+      active = null;
+      const locKeys = Object.keys(report);
+      for (const loc of locKeys) {
+        const ds = report[loc].diseases || {};
+        const dk = Object.keys(ds);
+        if (dk.length) {
+          active = { loc, disease: dk[0] };
+          break;
+        }
+      }
+    }
+
+    if (active) selectedMainLoc = active.loc;
+
+    populateColumns();
+    renderSubLocChips();
+    renderReport();
+
+    if (active) {
+      openDetails(active.loc, active.disease);
+    } else {
+      document.getElementById("detailsCard").classList.add("hidden");
+    }
+
+    document.getElementById("csvNote").textContent = `Loaded: ${filename}`;
+    log('JSON loaded successfully:', filename);
+  } catch (err) {
+    logError('Error parsing JSON:', err);
+  }
+}
+
+// Handle Video selection change - clear frame inputs
+document.getElementById('videoSelect').addEventListener('change', function() {
+  clearFrameInputs();
+  log('Video selected:', this.value);
+});
+
+// Generate timestamp for filename
+function generateTimestamp() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  return `${year}${month}${day}_${hours}${minutes}`;
+}
+
+// Generate PDF from report data
+function generatePDF(data, filename) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  
+  let yPos = 20;
+  const leftMargin = 15;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const maxWidth = pageWidth - 30;
+  const lineHeight = 6;
+  
+  // Helper function to add text with word wrap and page break handling
+  function addText(text, fontSize = 10, isBold = false, indent = 0) {
+    doc.setFontSize(fontSize);
+    doc.setFont('helvetica', isBold ? 'bold' : 'normal');
+    
+    const lines = doc.splitTextToSize(text, maxWidth - indent);
+    lines.forEach(line => {
+      if (yPos > 280) {
+        doc.addPage();
+        yPos = 20;
+      }
+      doc.text(line, leftMargin + indent, yPos);
+      yPos += lineHeight;
+    });
+  }
+  
+  // Helper to add a horizontal line
+  function addLine() {
+    if (yPos > 280) {
+      doc.addPage();
+      yPos = 20;
+    }
+    doc.setDrawColor(200, 200, 200);
+    doc.line(leftMargin, yPos, pageWidth - leftMargin, yPos);
+    yPos += 4;
+  }
+  
+  // Title
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(30, 64, 175); // Blue color
+  doc.text('AIG Endoscopy Report', pageWidth / 2, yPos, { align: 'center' });
+  yPos += 12;
+  doc.setTextColor(0, 0, 0); // Reset to black
+  
+  // Retrospective metadata
+  if (data.__retroMeta) {
+    const meta = data.__retroMeta;
+    addLine();
+    addText('Video Information', 12, true);
+    yPos += 2;
+    
+    if (meta.uhid) addText(`UHID: ${meta.uhid}`, 10, false, 5);
+    if (meta.video) addText(`Video: ${meta.video}`, 10, false, 5);
+    if (meta.startFrame !== null && meta.endFrame !== null) {
+      const frameCount = meta.endFrame - meta.startFrame + 1;
+      const duration = (frameCount / FPS).toFixed(2);
+      addText(`Frame Range: ${meta.startFrame} - ${meta.endFrame}`, 10, false, 5);
+      addText(`# Frames: ${frameCount}  |  Duration: ${duration} sec (at ${FPS} fps)`, 10, false, 5);
+    }
+    if (meta.segmentationFrame !== null && meta.segmentationFrame !== undefined) {
+      addText(`Segmentation Frame: ${meta.segmentationFrame}`, 10, false, 5);
+    }
+    if (meta.savedAt) {
+      const savedDate = new Date(meta.savedAt).toLocaleString();
+      addText(`Saved: ${savedDate}`, 10, false, 5);
+    }
+    yPos += 4;
+  }
+  
+  // Report content
+  const reportData = data.report || {};
+  
+  Object.keys(reportData).forEach(location => {
+    const locData = reportData[location];
+    const diseases = locData.diseases || {};
+    
+    if (Object.keys(diseases).length === 0) return;
+    
+    addLine();
+    addText(location, 14, true);
+    yPos += 2;
+    
+    Object.keys(diseases).forEach(diseaseName => {
+      const disease = diseases[diseaseName];
+      
+      // Disease name
+      addText(`• ${diseaseName}`, 11, true, 3);
+      
+      // Sub-locations
+      const sublocs = disease.sublocations || [];
+      if (sublocs.length > 0) {
+        addText(`Sub-Location: ${sublocs.join(', ')}`, 10, false, 8);
+      }
+      
+      // Disease-level frame info
+      if (disease.startFrame !== null && disease.startFrame !== undefined && 
+          disease.endFrame !== null && disease.endFrame !== undefined) {
+        const frameCount = disease.endFrame - disease.startFrame + 1;
+        const duration = (frameCount / FPS).toFixed(2);
+        addText(`Frames: ${disease.startFrame} - ${disease.endFrame} (${frameCount} frames, ${duration} sec)`, 10, false, 8);
+        if (disease.segmentationFrame !== null && disease.segmentationFrame !== undefined) {
+          addText(`Segmentation Frame: ${disease.segmentationFrame}`, 10, false, 8);
+        }
+      }
+      
+      // Sections
+      const sections = disease.sections || {};
+      Object.keys(sections).forEach(sectionName => {
+        const section = sections[sectionName];
+        
+        // Check if section has content
+        const hasAttrs = section.attrs && Object.keys(section.attrs).length > 0;
+        const hasFilledInputs = (section.inputs || []).some(i => {
+          if (i.type === 'group') return groupHasAnyValue(i);
+          return (i.label || i.value || '').trim() !== '';
+        });
+        const hasFilledSubs = Object.keys(section.subsections || {}).some(subName => {
+          const sub = section.subsections[subName];
+          const subHasAttrs = sub.attrs && Object.keys(sub.attrs).length > 0;
+          const subHasInputs = (sub.inputs || []).some(i => {
+            if (i.type === 'group') return groupHasAnyValue(i);
+            return (i.label || i.value || '').trim() !== '';
+          });
+          return subHasAttrs || subHasInputs;
+        });
+        
+        if (!hasAttrs && !hasFilledInputs && !hasFilledSubs) return;
+        
+        addText(`${sectionName}:`, 10, true, 8);
+        
+        // Section attributes
+        Object.keys(section.attrs || {}).forEach(attr => {
+          addText(`- ${attr}`, 10, false, 12);
+        });
+        
+        // Section inputs
+        (section.inputs || []).forEach(input => {
+          let txt = '';
+          if (input.type === 'group') {
+            txt = renderGroupLabel(input);
+          } else {
+            txt = (input.label || input.value || '').trim();
+          }
+          if (txt) addText(`- ${txt}`, 10, false, 12);
+        });
+        
+        // Subsections
+        Object.keys(section.subsections || {}).forEach(subName => {
+          const sub = section.subsections[subName];
+          const subHasAttrs = sub.attrs && Object.keys(sub.attrs).length > 0;
+          const subHasInputs = (sub.inputs || []).some(i => {
+            if (i.type === 'group') return groupHasAnyValue(i);
+            return (i.label || i.value || '').trim() !== '';
+          });
+          
+          if (!subHasAttrs && !subHasInputs) return;
+          
+          addText(`${subName}:`, 10, false, 12);
+          
+          Object.keys(sub.attrs || {}).forEach(attr => {
+            addText(`- ${attr}`, 10, false, 16);
+          });
+          
+          (sub.inputs || []).forEach(input => {
+            let txt = '';
+            if (input.type === 'group') {
+              txt = renderGroupLabel(input);
+            } else {
+              txt = (input.label || input.value || '').trim();
+            }
+            if (txt) addText(`- ${txt}`, 10, false, 16);
+          });
+        });
+      });
+      
+      // Comments
+      if (disease.comments) {
+        addText(`Comments: ${disease.comments}`, 10, false, 8);
+      }
+      
+      yPos += 3;
+    });
+  });
+  
+  // Overall remarks
+  if (data.overallRemarks) {
+    addLine();
+    addText('Overall Remarks', 12, true);
+    yPos += 2;
+    addText(data.overallRemarks, 10, false, 5);
+  }
+  
+  // Save PDF
+  return doc.output('blob');
+}
+
+// Save JSON and PDF with retrospective data
+document.getElementById("saveJSON").onclick = async () => {
+  const uhid = document.getElementById('uhidSelect').value;
+  const video = document.getElementById('videoSelect').value;
+  const startFrame = document.getElementById('startFrame').value;
+  const endFrame = document.getElementById('endFrame').value;
+  const segmentationFrame = document.getElementById('segmentationFrame').value;
+  
+  // Build output object with retrospective metadata
+  const out = {
+    __retroMeta: {
+      uhid: uhid || null,
+      video: video || null,
+      startFrame: startFrame ? parseInt(startFrame, 10) : null,
+      endFrame: endFrame ? parseInt(endFrame, 10) : null,
+      segmentationFrame: segmentationFrame ? parseInt(segmentationFrame, 10) : null,
+      savedAt: new Date().toISOString()
+    },
+    __meta: active ? { lastActive: active } : null,
+    report: JSON.parse(JSON.stringify(report || {})),
+    overallRemarks: document.getElementById('overallRemarks').value || ""
+  };
+  
+  log('Saving report with retro metadata:', out.__retroMeta);
+  
+  // Generate filename base
+  const timestamp = generateTimestamp();
+  const filenameBase = uhid ? `${uhid}_${timestamp}` : `report_${timestamp}`;
+  const jsonFilename = `${filenameBase}.json`;
+  const pdfFilename = `${filenameBase}.pdf`;
+  
+  // Generate PDF blob
+  let pdfBlob;
+  try {
+    pdfBlob = generatePDF(out, pdfFilename);
+    log('PDF generated successfully');
+  } catch (err) {
+    logError('Error generating PDF:', err);
+    alert('Error generating PDF: ' + err.message);
+  }
+  
+  // Try to save to UHID folder if File System Access API is available
+  if (retroData.uhidFolderHandles && retroData.uhidFolderHandles[uhid]) {
+    try {
+      const folderHandle = retroData.uhidFolderHandles[uhid];
+      
+      // Save JSON
+      const jsonFileHandle = await folderHandle.getFileHandle(jsonFilename, { create: true });
+      const jsonWritable = await jsonFileHandle.createWritable();
+      await jsonWritable.write(JSON.stringify(out, null, 2));
+      await jsonWritable.close();
+      log('JSON saved to UHID folder:', jsonFilename);
+      
+      // Save PDF
+      if (pdfBlob) {
+        const pdfFileHandle = await folderHandle.getFileHandle(pdfFilename, { create: true });
+        const pdfWritable = await pdfFileHandle.createWritable();
+        await pdfWritable.write(pdfBlob);
+        await pdfWritable.close();
+        log('PDF saved to UHID folder:', pdfFilename);
+      }
+      
+      // Update JSON count in dropdown
+      updateUhidJsonCount(uhid);
+      
+      document.getElementById('csvNote').textContent = `Saved: ${jsonFilename} and ${pdfFilename} to ${uhid} folder`;
+      return;
+    } catch (err) {
+      logWarn('Could not save to UHID folder, falling back to download:', err);
+    }
+  }
+  
+  // Fallback: Download the files
+  // Download JSON
+  const jsonBlob = new Blob([JSON.stringify(out, null, 2)], { type: "application/json" });
+  const jsonUrl = URL.createObjectURL(jsonBlob);
+  const jsonLink = document.createElement("a");
+  jsonLink.href = jsonUrl;
+  jsonLink.download = jsonFilename;
+  jsonLink.click();
+  URL.revokeObjectURL(jsonUrl);
+  
+  // Update JSON count in dropdown (even for downloads, to keep track)
+  if (uhid) {
+    updateUhidJsonCount(uhid);
+  }
+  
+  // Download PDF
+  if (pdfBlob) {
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    const pdfLink = document.createElement("a");
+    pdfLink.href = pdfUrl;
+    pdfLink.download = pdfFilename;
+    setTimeout(() => {
+      pdfLink.click();
+      URL.revokeObjectURL(pdfUrl);
+    }, 100); // Small delay to ensure both downloads trigger
+  }
+  
+  document.getElementById('csvNote').textContent = `Downloaded: ${jsonFilename} and ${pdfFilename}`;
+  log('Files download initiated');
+};
+
+const jsonFileInput = document.getElementById("jsonFile");
+document.getElementById("loadSavedJSON").onclick = () => jsonFileInput.click();
+
+jsonFileInput.addEventListener("change", ev => {
+  const f = ev.target.files[0];
+  if(!f) {
+    logWarn('No file selected for JSON load');
+    return;
+  }
+  log('Loading JSON file:', f.name);
+  const reader = new FileReader();
+  reader.onerror = () => {
+    logError('Failed to read JSON file:', reader.error);
+    alert("Could not read the JSON file. Please try again.");
+  };
+  reader.onload = () => {
+    try{
+      log('Parsing JSON...');
+      const parsedAll = JSON.parse(reader.result);
+      if(typeof parsedAll !== "object" || parsedAll === null)
+        throw new Error("Invalid JSON structure");
+
+      // Handle retrospective metadata
+      if(parsedAll.__retroMeta){
+        const retroMeta = parsedAll.__retroMeta;
+        log('Found retrospective metadata:', retroMeta);
+        
+        // Restore UHID selection
+        if(retroMeta.uhid){
+          const uhidSelect = document.getElementById('uhidSelect');
+          // Check if UHID exists in dropdown, if not add it
+          let uhidOption = Array.from(uhidSelect.options).find(opt => opt.value === retroMeta.uhid);
+          if(!uhidOption){
+            uhidOption = document.createElement('option');
+            uhidOption.value = retroMeta.uhid;
+            uhidOption.textContent = retroMeta.uhid;
+            uhidSelect.appendChild(uhidOption);
+            // Also add to retroData
+            if(!retroData.uhidList.includes(retroMeta.uhid)){
+              retroData.uhidList.push(retroMeta.uhid);
+            }
+            if(!retroData.videosByUhid[retroMeta.uhid]){
+              retroData.videosByUhid[retroMeta.uhid] = [];
+            }
+          }
+          uhidSelect.value = retroMeta.uhid;
+          
+          // Trigger change event to populate video dropdown
+          uhidSelect.dispatchEvent(new Event('change'));
+          
+          // Restore video selection
+          if(retroMeta.video){
+            const videoSelect = document.getElementById('videoSelect');
+            // Check if video exists in dropdown, if not add it
+            let videoOption = Array.from(videoSelect.options).find(opt => opt.value === retroMeta.video);
+            if(!videoOption){
+              videoOption = document.createElement('option');
+              videoOption.value = retroMeta.video;
+              videoOption.textContent = retroMeta.video;
+              videoSelect.appendChild(videoOption);
+              // Also add to retroData
+              if(!retroData.videosByUhid[retroMeta.uhid].includes(retroMeta.video)){
+                retroData.videosByUhid[retroMeta.uhid].push(retroMeta.video);
+              }
+            }
+            videoSelect.value = retroMeta.video;
+            videoSelect.disabled = false;
+          }
+        }
+        
+        // Restore frame range
+        if(retroMeta.startFrame !== null && retroMeta.startFrame !== undefined){
+          document.getElementById('startFrame').value = retroMeta.startFrame;
+        }
+        if(retroMeta.endFrame !== null && retroMeta.endFrame !== undefined){
+          document.getElementById('endFrame').value = retroMeta.endFrame;
+        }
+        if(retroMeta.segmentationFrame !== null && retroMeta.segmentationFrame !== undefined){
+          document.getElementById('segmentationFrame').value = retroMeta.segmentationFrame;
+        }
+        
+        // Update frame calculations display
+        updateFrameCalculations();
+      }
+
+      // Handle lastActive metadata
+      let lastActive = null;
+      if(parsedAll.__meta && parsedAll.__meta.lastActive){
+        lastActive = parsedAll.__meta.lastActive;
+        log('Found lastActive in JSON:', lastActive);
+      }
+      
+      // Handle overall remarks
+      if(parsedAll.overallRemarks){
+        document.getElementById('overallRemarks').value = parsedAll.overallRemarks;
+      }
+
+      // Get report data (handle both old and new format)
+      if(parsedAll.report){
+        report = parsedAll.report;
+      } else {
+        // Old format - the parsedAll itself is the report (minus meta fields)
+        const tempReport = {...parsedAll};
+        delete tempReport.__retroMeta;
+        delete tempReport.__meta;
+        delete tempReport.overallRemarks;
+        report = tempReport;
+      }
+
+      // Normalize sublocations
+      Object.keys(report).forEach(loc => {
+        const ds = report[loc].diseases || {};
+        Object.keys(ds).forEach(dn => {
+          const d = ds[dn];
+          if(Array.isArray(d.sublocations)){
+          } else if(typeof d.sublocation === "string" && d.sublocation){
+            d.sublocations = [d.sublocation];
+            delete d.sublocation;
+          } else {
+            d.sublocations = d.sublocations || [];
+          }
+        });
+      });
+
+      if(lastActive &&
+         report[lastActive.loc] &&
+         report[lastActive.loc].diseases &&
+         report[lastActive.loc].diseases[lastActive.disease]){
+        active = { loc: lastActive.loc, disease: lastActive.disease };
+      } else {
+        active = null;
+        const locKeys = Object.keys(report);
+        for(const loc of locKeys){
+          const ds = report[loc].diseases || {};
+          const dk = Object.keys(ds);
+          if(dk.length){
+            active = { loc, disease: dk[0] };
+            break;
+          }
+        }
+      }
+
+      if(active) selectedMainLoc = active.loc;
+
+      populateColumns();
+      renderSubLocChips();
+      renderReport();
+
+      if(active){
+        openDetails(active.loc, active.disease);
+      } else {
+        document.getElementById("detailsCard").classList.add("hidden");
+      }
+
+      document.getElementById("csvNote").textContent = "Report JSON loaded.";
+      log('JSON report loaded successfully');
+    }catch(err){
+      logError('Error loading JSON:', err);
+      alert("Could not load JSON file: " + err.message);
+    }
+  };
+  reader.readAsText(f);
+  ev.target.value = "";
+});
+
+/* ---------- CSV upload & sample ---------- */
+document.getElementById("csvFile").addEventListener("change", e => {
+  const f = e.target.files[0];
+  if(!f) {
+    logWarn('No file selected for CSV upload');
+    return;
+  }
+  log('Loading CSV file:', f.name, 'size:', f.size, 'bytes');
+  const r = new FileReader();
+  r.onerror = () => {
+    logError('Failed to read CSV file:', r.error);
+    document.getElementById("csvNote").textContent = "Error reading file!";
+    alert("Could not read the CSV file. Please try again.");
+  };
+  r.onload = () => {
+    try {
+      log('CSV file read complete, parsing...');
+      const rows = parseCSV(r.result);
+      if(rows.length === 0){
+        logWarn('CSV parsing returned no valid rows');
+        document.getElementById("csvNote").textContent = "Warning: No data found in CSV!";
+        return;
+      }
+      buildFromCSV(rows);
+      populateColumns();
+      renderSubLocChips();
+      renderReport();
+      document.getElementById("csvNote").textContent = "CSV loaded (" + rows.length + " rows).";
+      log('CSV loaded successfully');
+    } catch(err) {
+      logError('Error processing CSV:', err);
+      document.getElementById("csvNote").textContent = "Error processing CSV!";
+      alert("Could not process the CSV file: " + err.message);
+    }
+  };
+  r.readAsText(f);
+});
+
+document.getElementById("loadSample").onclick = () => {
+  log('Loading sample CSV data');
+  const sample = `Diagnosis,Section,Subsection,Default_Sub_Location,Conditional_on,Multi_Attribute,Default_Attr,Section_Hint,Subsection_Hint,Esophagus,GE Junction,Stomach,Duodenum,Attribute1,Attribute2,Attribute3
+Suspected Barrett's Esophagus,Biopsy taken,,Lower,,single,Yes,Biopsy taken for suspected Barrett's.\nThis can be multiline.,,x,,,,"Yes","No",
+Suspected Barrett's Esophagus,Texture,,Lower,,multi,,Describe the texture.\nbarrett_texture_800x400.jpg,,x,,,,"Velvety","Granular","Irregular surface pattern"
+Suspected Barrett's Esophagus,Prague Classification,,Lower,,single,,Enter Prague C/M length.,,x,,,,"Range(0,10)","Range(0,10)",
+Caustic Injury,Substance Type,,Upper,,single,,Type of substance ingested.,,x,,,,"acid","alkali","oxidizer"
+Caustic Injury,Time_since_ingestion,,Upper,,single,,Time elapsed since ingestion.,,x,,,,"int_box mm from alphanum_box",,
+Tumor Sample,Size,,Upper,,single,,Enter size.,,x,x,x,x,"float_box cm",,
+Simple Distance,Distance from incisors,,Upper,,single,,Distance only.,,x,,,,"int_box",,
+`;
+  const rows = parseCSV(sample);
+  buildFromCSV(rows);
+  populateColumns();
+  renderSubLocChips();
+  renderReport();
+  document.getElementById("csvNote").textContent = "Sample loaded.";
+  log('Sample CSV loaded');
+};
+
+/* ---------- init ---------- */
+(function init(){
+  populateColumns();
+  renderSubLocChips();
+  updateFrameCalculations(); // Initialize frame count display
+  tryLoadDefaultRetroVideos(); // Try to load default retro_videos folder
+})();
+</script>
+</body>
+</html>
